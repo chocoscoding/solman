@@ -7,10 +7,9 @@ import { cn } from "@/lib/utils";
 import { useScroll } from "motion/react";
 
 const navLinks = [
-  { name: "HOME", href: "#" },
-  { name: "ABOUT", href: "#" },
-  { name: "ROADMAP", href: "#" },
-  { name: "WHITEPAPER", href: "#" },
+  { name: "ABOUT", href: "/#" },
+  { name: "ROADMAP", href: "/#" },
+  { name: "WHITEPAPER", href: "/#" },
   { name: "PRESALE", href: "/presale" },
 ];
 
@@ -36,9 +35,9 @@ export const HeroHeader = () => {
         )}>
         <div className="mx-auto max-w-6xl px-4 flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center">
+          <Link href={"/"} className="flex items-center">
             <span className="text-3xl font-extrabold font-gorditas text-black tracking-tight select-none">Solman</span>
-          </div>
+          </Link>
           {/* Desktop Nav */}
           <ul className="hidden md:flex gap-8 items-center">
             {navLinks.map((link) => (

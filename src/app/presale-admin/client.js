@@ -873,7 +873,7 @@ export default function PresalePageClient() {
               </div>
 
               {/* Main Content */}
-              {wallet.connected && (
+              {wallet.connected && isAdmin && (
                 <div className="py-6">
                   {/* Always show balances for admin, or for anyone if icoData exists */}
                   {(isAdmin || icoData) && (
