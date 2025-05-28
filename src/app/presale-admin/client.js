@@ -16,7 +16,7 @@ import {
 import { ASSOCIATED_PROGRAM_ID } from "@project-serum/anchor/dist/cjs/utils/token";
 
 import IDL from "../../lib/solman_presale.json";
-import Progressbar from "../../components/progressbar/Progressbar2";
+import Progressbar from "../../components/progressbar/Progressbar";
 import { HermesClient } from "@pythnetwork/hermes-client";
 import { notFound } from "next/navigation";
 
