@@ -57,7 +57,7 @@ export const HeroHeader = () => {
               href="https://t.me/"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-white border-2 border-black rounded-lg w-10 h-10 flex items-center justify-center hover:bg-[#FFD43B] transition-colors"
+              className="bg-white border-2 border-black rounded boxShadow w-10 h-10 flex items-center justify-center hover:bg-[#FFD43B] transition-colors"
               aria-label="Telegram">
               <FaTelegram className="text-black text-xl" />
             </Link>
@@ -65,7 +65,7 @@ export const HeroHeader = () => {
               href="https://x.com/"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-white border-2 border-black rounded-lg w-10 h-10 flex items-center justify-center hover:bg-[#FFD43B] transition-colors"
+              className="bg-white border-2 border-black rounded boxShadow w-10 h-10 flex items-center justify-center hover:bg-[#FFD43B] transition-colors"
               aria-label="X">
               <FaXTwitter className="text-black text-xl" />
             </Link>
@@ -97,7 +97,7 @@ export const HeroHeader = () => {
                   href="https://t.me/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-white border-2 border-black rounded-lg w-10 h-10 flex items-center justify-center hover:bg-[#FFD43B] transition-colors"
+                  className="bg-white border-2 border-black rounded boxShadow w-10 h-10 flex items-center justify-center hover:bg-[#FFD43B] transition-colors"
                   aria-label="Telegram">
                   <FaTelegram className="text-black text-xl" />
                 </Link>
@@ -105,7 +105,7 @@ export const HeroHeader = () => {
                   href="https://x.com/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-white border-2 border-black rounded-lg w-10 h-10 flex items-center justify-center hover:bg-[#FFD43B] transition-colors"
+                  className="bg-white border-2 border-black rounded boxShadow w-10 h-10 flex items-center justify-center hover:bg-[#FFD43B] transition-colors"
                   aria-label="X">
                   <FaXTwitter className="text-black text-xl" />
                 </Link>
