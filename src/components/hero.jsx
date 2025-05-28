@@ -56,7 +56,7 @@ export default function Hero() {
             </div>
           </div>
           <div className="flex gap-4 pt-4">
-            <Link>
+            <Link href="#">
               <motion.button
                 {...tiltHoverSpringButton}
                 className="bg-red-500 text-white px-8 py-3 text-xl font-bold rounded shadow-black hover:bg-red-600 font-gorditas cursor-pointer"
@@ -64,7 +64,7 @@ export default function Hero() {
                 BUY $SOLMAN
               </motion.button>
             </Link>
-            <Link>
+            <Link href="#">
               <motion.button
                 {...tiltHoverRightSpringButton}
                 className="bg-white text-black px-8 py-3 text-xl font-bold rounded shadow-black hover:bg-gray-100 font-gorditas cursor-pointer"

@@ -827,7 +827,7 @@ export default function PresalePageClient() {
   };
 
   return (
-    <section className="relative bg-[#E7FF53] pt-[80px] min-h-screen flex flex-col items-center justify-center" id="contact">
+    <section className="relative bg-[#E7FF53] pt-[80px] min-h-screen flex flex-col items-center justify-center transition-all" id="contact">
       {/* Big MEMECO text */}
       <div className="w-full flex justify-center">
         <h1 className="font-gorditas text-black text-[80px] sm:text-[120px] md:text-[180px] lg:text-[220px] xl:text-[260px] 2xl:text-[320px] leading-[90%] text-center tracking-tight mb-0 mt-4 select-none">
@@ -934,11 +934,26 @@ export default function PresalePageClient() {
               </div>
             </div>
           </div>
-          <div>
-            <button className="block text-center mt-6 mb-2 py-3 rounded-full font-bold text-lg text-yellow-500 bg-black">
+          <WalletMultiButton className="block text-center rounded-full font-bold text-lg py-2 px-3 text-yellow-500 bg-black hover:bg-transparent w-full cursor-pointer hover:text-black" />
+          <button className="outline-2 outline-black mt-6 mb-2 p-0.5 rounded-full w-full relative">
+            <WalletMultiButton
+              style={{
+                display: "block",
+                textAlign: "center",
+                borderRadius: 9999,
+                fontWeight: "bold",
+                fontSize: 18,
+                padding: "8px 12px",
+                color: "#E7FF53",
+                background: "black",
+                width: "100%",
+                cursor: "pointer",
+              }}
+            />
+            <div className="block text-center rounded-full font-bold text-lg py-2 px-3 text-yellow-500 bg-black hover:bg-transparent w-full cursor-pointer hover:text-black">
               CONNECT WALLET
-            </button>
-          </div>
+            </div>
+          </button>
         </div>
       </div>
     </section>
