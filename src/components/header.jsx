@@ -31,7 +31,7 @@ export const HeroHeader = () => {
     <header>
       <nav
         className={cn(
-          "fixed z-20 w-full transition-colors duration-150 bg-[#fdc700] border-b border-black/10",
+          "fixed z-50 w-full transition-colors duration-150 bg-[#fdc700] border-b border-black/10",
           scrolled && "bg-[#FFD43B]/90 backdrop-blur-2xl"
         )}>
         <div className="mx-auto max-w-6xl px-4 flex items-center justify-between h-16">

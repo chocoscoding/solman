@@ -149,20 +149,20 @@ export default function PresalePageClient() {
   const claimControls = useAnimation();
 
   const handleBuyHover = () => {
-    buyControls.start({ scale: 1.08 });
-    claimControls.start({ scale: 0.95 });
+    buyControls.start({ scale: 1.01 });
+    claimControls.start({ scale: 0.99, opacity: 0.6 });
   };
   const handleBuyLeave = () => {
     buyControls.start({ scale: 1 });
-    claimControls.start({ scale: 1 });
+    claimControls.start({ scale: 1, opacity: 1 });
   };
   const handleClaimHover = () => {
-    claimControls.start({ scale: 1.08 });
-    buyControls.start({ scale: 0.95 });
+    claimControls.start({ scale: 1.01 });
+    buyControls.start({ scale: 0.99, opacity: 0.6 });
   };
   const handleClaimLeave = () => {
     claimControls.start({ scale: 1 });
-    buyControls.start({ scale: 1 });
+    buyControls.start({ scale: 1, opacity: 1 });
   };
 
   // Utility function to fetch presale info and user/admin info
