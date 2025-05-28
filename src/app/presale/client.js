@@ -17,7 +17,7 @@ import {
 import { ASSOCIATED_PROGRAM_ID } from "@project-serum/anchor/dist/cjs/utils/token";
 
 import IDL from "../../lib/solman_presale.json";
-import Progressbar from "../../components/progressbar/Progressbar2";
+import Progressbar from "../../components/progressbar/Progressbar";
 import { HermesClient } from "@pythnetwork/hermes-client";
 import { PhantomWalletName } from "@solana/wallet-adapter-wallets";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
