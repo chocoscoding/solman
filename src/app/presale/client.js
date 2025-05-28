@@ -21,6 +21,9 @@ import Progressbar from "../../components/progressbar/Progressbar";
 import { HermesClient } from "@pythnetwork/hermes-client";
 import { PhantomWalletName } from "@solana/wallet-adapter-wallets";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
+import { FaSpinner } from "react-icons/fa6";
+import PresaleCountdown from "@/components/presale/PresaleCountdown";
+import BuyAndClaim from "@/components/presale/BuyAndClaim";
 
 // Dynamically import WalletMultiButton with SSR disabled
 const WalletMultiButton = dynamic(() => import("@solana/wallet-adapter-react-ui").then((mod) => mod.WalletMultiButton), { ssr: false });
@@ -33,96 +36,7 @@ const ENV_ICO_MINT = "KhdTGv2Ve1AVioVfQimLd84G4RfDUXx7m3Qf27p2tz4";
 const PROGRAM_ID = new PublicKey(ENV_PROGRAM_ID);
 const ICO_MINT = new PublicKey(ENV_ICO_MINT);
 
-// ...existing code...
-function PresaleCountdown({ startTime, endTime }) {
-  const [label, setLabel] = useState("");
-  const [time, setTime] = useState({
-    days: "00",
-    hours: "00",
-    minutes: "00",
-    seconds: "00",
-  });
-  const [ended, setEnded] = useState(false);
-
-  useEffect(() => {
-    if (!startTime || !endTime) {
-      setLabel("");
-      setTime({ days: "00", hours: "00", minutes: "00", seconds: "00" });
-      setEnded(false);
-      return;
-    }
-    let interval;
-    function updateCountdown() {
-      const now = Date.now();
-      const start = new Date(new BN(startTime).toNumber());
-      const end = new Date(new BN(endTime).toNumber());
-      let target, newLabel;
-
-      if (now < start) {
-        target = start;
-        newLabel = "Presale starts in";
-        setEnded(false);
-      } else if (now < end) {
-        target = end;
-        newLabel = "Presale ends in";
-        setEnded(false);
-      } else {
-        setLabel("");
-        setEnded(true);
-        setTime({ days: "00", hours: "00", minutes: "00", seconds: "00" });
-        return;
-      }
-
-      const diff = target - now;
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-      setLabel(newLabel);
-      setTime({
-        days: days.toString().padStart(2, "0"),
-        hours: hours.toString().padStart(2, "0"),
-        minutes: minutes.toString().padStart(2, "0"),
-        seconds: seconds.toString().padStart(2, "0"),
-      });
-    }
-    updateCountdown();
-    interval = setInterval(updateCountdown, 1000);
-    return () => clearInterval(interval);
-  }, [startTime, endTime]);
-
-  if (ended) {
-    return (
-      <div className="w-full flex flex-col items-center my-4">
-        <div className="bg-black text-[#E7FF53] font-bold text-lg rounded-lg px-6 py-3 text-center">
-          Presale ended, You can now claim your $SOLMAN
-        </div>
-      </div>
-    );
-  }
-
-  if (!label) return null;
-  return (
-    <div className="w-full flex flex-col items-center my-4">
-      <div className="text-black font-bold text-lg mb-2">{label}</div>
-      <div className="w-full border-t border-black mb-2"></div>
-      <div className="flex justify-center gap-6 mb-1">
-        <span className="text-black font-semibold text-sm">Days</span>
-        <span className="text-black font-semibold text-sm">Hours</span>
-        <span className="text-black font-semibold text-sm">Minutes</span>
-        <span className="text-black font-semibold text-sm">Seconds</span>
-      </div>
-      <div className="flex justify-center gap-6">
-        <span className="bg-black text-[#E7FF53] font-bold text-xl rounded-lg px-4 py-1 min-w-[48px] text-center">{time.days}</span>
-        <span className="bg-black text-[#E7FF53] font-bold text-xl rounded-lg px-4 py-1 min-w-[48px] text-center">{time.hours}</span>
-        <span className="bg-black text-[#E7FF53] font-bold text-xl rounded-lg px-4 py-1 min-w-[48px] text-center">{time.minutes}</span>
-        <span className="bg-black text-[#E7FF53] font-bold text-xl rounded-lg px-4 py-1 min-w-[48px] text-center">{time.seconds}</span>
-      </div>
-    </div>
-  );
-}
-// ...existing code....
+// Example price per SOLMAN in USDT
 
 export default function PresalePageClient() {
   const { connection } = useConnection();
@@ -140,11 +54,13 @@ export default function PresalePageClient() {
   const [pricePerToken, setPricePerToken] = useState(0);
   const [startTime, setStartTime] = useState(0);
   const [endTime, setEndTime] = useState(0);
+  const [userUsdcBalance, setUserUsdcBalance] = useState(null);
 
   const [solPriceInUsdc, setSolPriceInUsdc] = useState(null);
   const [presaleSolBalance, setPresaleSolBalance] = useState(0);
   const [presaleUsdcBalance, setPresaleUsdcBalance] = useState(0);
 
+  const PRICE_PER_SOLMAN = icoData?.pricePerToken || 0;
   const buyControls = useAnimation();
   const claimControls = useAnimation();
 
@@ -174,15 +90,18 @@ export default function PresalePageClient() {
     const presaleInfoPda = presaleInfo.publicKey;
     const authority = presaleInfo.account.authority;
 
+    const walletConnected = wallet.connected;
     // Derive user/admin info PDA
     let userInfoPda = null,
       userInfo = null;
-    if (!isAdmin) {
-      [userInfoPda] = PublicKey.findProgramAddressSync([Buffer.from("user"), wallet.publicKey.toBuffer()], program.programId);
-      try {
-        userInfo = await program.account.userInfo.fetch(userInfoPda);
-      } catch {
-        userInfo = null;
+    if (walletConnected) {
+      if (!isAdmin) {
+        [userInfoPda] = PublicKey.findProgramAddressSync([Buffer.from("user"), wallet.publicKey.toBuffer()], program.programId);
+        try {
+          userInfo = await program.account.userInfo.fetch(userInfoPda);
+        } catch {
+          userInfo = null;
+        }
       }
     }
 
@@ -194,14 +113,6 @@ export default function PresalePageClient() {
       userInfoPda,
     };
   }
-
-  useEffect(() => {
-    if (wallet.connected) {
-      checkIfAdmin();
-      fetchIcoData();
-      fetchUserTokenBalance();
-    }
-  }, [wallet.connected]);
 
   useEffect(() => {
     if (icoData) {
@@ -241,7 +152,6 @@ export default function PresalePageClient() {
   }, []);
 
   const getProgram = () => {
-    if (!wallet.connected) return null;
     const provider = new AnchorProvider(connection, wallet, {
       commitment: "confirmed",
     });
@@ -266,6 +176,8 @@ export default function PresalePageClient() {
   // Cleaned up: fetchAllIcoData and fetchUserIcoData merged into fetchIcoData below
 
   const CheckIsAdmin = () => {
+    if (!wallet.connected) return false;
+
     const adminAddress = "3JFwGRwwY6UMo4bGt4sFnLLTmxg5iyoMuNKQPf6oAucF";
     const isAdmin = wallet.publicKey.toString() === adminAddress;
 
@@ -273,8 +185,8 @@ export default function PresalePageClient() {
   };
   // Unified fetchIcoData for both user and admin
   const fetchIcoData = async () => {
-    if (!wallet.connected) return;
     setLoading(true);
+
     try {
       const program = getProgram();
       if (!program) return;
@@ -891,11 +803,60 @@ export default function PresalePageClient() {
     }
   };
 
+  // Two-way binding for USDT <-> SOLMAN
+  const [usdtAmount, setUsdtAmount] = useState("");
+  const [solmanAmount, setSolmanAmount] = useState("");
+
+  // When USDT changes, update SOLMAN
+  const handleUsdtChange = (e) => {
+    const value = e.target.value.replace(/[^0-9.]/g, "");
+    setUsdtAmount(value);
+    const num = parseFloat(value);
+    setSolmanAmount(num && num > 0 ? (num / PRICE_PER_SOLMAN).toFixed(4) : "");
+    setAmount(value); // keep original amount state in sync if needed for buyTokens
+  };
+
+  // When SOLMAN changes, update USDT
+  const handleSolmanChange = (e) => {
+    const value = e.target.value.replace(/[^0-9.]/g, "");
+    setSolmanAmount(value);
+    const num = parseFloat(value);
+    setUsdtAmount(num && num > 0 ? (num * PRICE_PER_SOLMAN).toFixed(4) : "");
+    setAmount(num && num > 0 ? (num * PRICE_PER_SOLMAN).toFixed(4) : ""); // keep original amount state in sync if needed
+  };
+
+  const fetchUserUsdcBalance = async () => {
+    if (!wallet.connected) return;
+    try {
+      const usdcMint = new PublicKey("Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr");
+      const userUsdcAccount = await getAssociatedTokenAddress(usdcMint, wallet.publicKey);
+      const accountInfo = await connection.getTokenAccountBalance(userUsdcAccount);
+      setUserUsdcBalance(accountInfo.value.uiAmountString);
+    } catch (e) {
+      setUserUsdcBalance("0");
+    }
+  };
+
+  const init = async () => {
+    await checkIfAdmin();
+    await fetchIcoData();
+    if (wallet.connected) {
+      await fetchUserTokenBalance();
+      await fetchUserUsdcBalance();
+    }
+  };
+
+  useEffect(() => {
+    init().then();
+  }, [wallet.connected]);
+
   return (
-    <section className="relative bg-[#E7FF53] pt-[80px] min-h-screen flex flex-col items-center justify-center transition-all" id="contact">
+    <section
+      className="relative bg-[#E7FF53] pt-[80px] min-h-screen flex flex-col items-center justify-center transition-all mb-6"
+      id="contact">
       {/* Big Solman text */}
       <div className="w-full flex justify-center">
-        <h1 className="font-gorditas text-black text-[80px] sm:text-[120px] md:text-[180px] lg:text-[220px] xl:text-[260px] 2xl:text-[320px] leading-[90%] text-center tracking-tight mb-0 mt-4 select-none">
+        <h1 className="font-gorditas text-black text-[80px] sm:text-[120px] md:text-[180px] lg:text-[220px] xl:text-[260px]  leading-[90%] text-center tracking-tight mb-6 select-none">
           SOLMAN
         </h1>
       </div>
@@ -918,12 +879,7 @@ export default function PresalePageClient() {
 
       {/* Center Card */}
       <div className="relative z-20 flex flex-col items-center w-full">
-        <div className="mx-auto mt-4 max-w-[540px] rounded-2xl border-2 border-black bg-[#FEF200] px-6 py-8 shadow-xl">
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <img src="./solman2.png" alt="Coin" className="w-8 h-8 object-contain" />
-            <span className="text-black font-title-font text-2xl font-bold">BUY SOLMAN</span>
-          </div>
-
+        <div className="mx-auto mt-4 mb-10 max-w-[540px] rounded-2xl border-2 border-black bg-[#FEF200] px-6 py-8 shadow-xl">
           <div className="w-full flex justify-end mb-2">
             <WalletMultiButton
               style={{
@@ -937,84 +893,102 @@ export default function PresalePageClient() {
                 minWidth: "200px",
               }}>
               {wallet.connected ? null : (
-                <button className="block text-center rounded-full font-bold text-lg py-2 px-3 text-yellow-500 bg-black w-full cursor-pointer">
+                <div className="block text-center rounded-full font-bold text-lg py-2 px-3 text-yellow-500 bg-black w-full cursor-pointer">
                   CONNECT WALLET
-                </button>
+                </div>
               )}
             </WalletMultiButton>
           </div>
-
-          <div className="grid gap-4 grid-cols-2 mb-4">
-            <div className="flex flex-col items-start rounded-lg border border-black bg-transparent p-3">
-              <span className="text-xs text-black/70">Current price</span>
-              <span className="font-bold text-lg">$0.00138</span>
-            </div>
-            <div className="flex flex-col items-start rounded-lg border border-black bg-transparent p-3">
-              <span className="text-xs text-black/70">Listing Price</span>
-              <span className="font-bold text-lg">$0.005</span>
-            </div>
+          <div className="flex items-center justify-center gap-2 mb-6">
+            <img src="./solman2.png" alt="Coin" className="w-8 h-8 object-contain" />
+            <span className="text-black font-title-font text-2xl font-bold">BUY SOLMAN</span>
           </div>
-
-          <Progressbar raised={20} goal={200} />
-
-          <br />
-          <PresaleCountdown startTime={icoData?.startTime} endTime={icoData?.endTime} />
-          <br />
-          <div className="flex flex-col items-start rounded-lg border border-black bg-black text-yellow-500 p-3">
-            <span className="text-xs text-white">Balance</span>
-            <span className="font-bold text-lg">
-              {userTokenBalance !== null ? userTokenBalance / 1e9 : "--"}
-              <span className="ml-1.5 font-light text-sm">{`SOLMAN`}</span>
-            </span>
-          </div>
-          <div className="grid gap-4 grid-cols-2 mt-4">
-            <div>
-              <div className="flex items-center justify-between gap-3 mb-1">
-                <span className="font-semibold text-black">You send</span>
-                <span className="text-black">$ 0.00000</span>
-              </div>
-              <div className="flex items-center justify-between rounded-lg border border-black bg-transparent">
-                <input className="outline-none w-[65%] bg-transparent p-3 placeholder:text-black" placeholder="at least 0.001" />
-                <div className="flex items-center gap-1 pr-2">
-                  <img src="./solman2.png" alt="USDT" className="w-6 h-6 object-contain" />
-                  <span className="m-text font-bold">USDT</span>
+          {/* Spinner if loading */}
+          {loading || wallet.connecting || wallet.disconnecting || !connection ? (
+            <div className="flex flex-col items-center justify-center min-h-[300px] min-w-[300px] w-full md:w-[400px]">
+              <FaSpinner className="animate-spin text-black" style={{ fontSize: 80 }} />
+            </div>
+          ) : (
+            <>
+              <div className="grid gap-4 grid-cols-2 mb-4">
+                <div className="flex flex-col items-start rounded-lg border border-black bg-transparent p-3">
+                  <span className="text-xs text-black/70">Current price</span>
+                  <span className="font-bold text-lg">
+                    {`$`}
+                    {`${PRICE_PER_SOLMAN}`}
+                  </span>
+                </div>
+                <div className="flex flex-col items-start rounded-lg border border-black bg-transparent p-3">
+                  <span className="text-xs text-black/70">Listing Price</span>
+                  <span className="font-bold text-lg">$0.005</span>
                 </div>
               </div>
-            </div>
-            <div>
-              <div className="flex items-center justify-between gap-3 mb-1">
-                <span className="font-semibold text-black">You’ll receive</span>
-              </div>
-              <div className="flex items-center justify-between rounded-lg border border-black bg-transparent">
-                <input className="outline-none w-[65%] bg-transparent p-3 placeholder:text-black" placeholder="0" />
-                <div className="flex items-center gap-1 pr-2">
-                  <img src="./solman2.png" alt="LHUNT" className="w-6 h-6 object-contain" />
-                  <span className="m-text font-bold">SOLMAN</span>
+
+              <Progressbar raised={20} goal={200} />
+
+              <br />
+              <PresaleCountdown startTime={icoData?.startTime} endTime={icoData?.endTime} />
+              <br />
+              {wallet.connected ? (
+                <div className="flex flex-col items-start rounded-lg border border-black bg-black text-yellow-500 p-3">
+                  <span className="text-xs text-white">Balance</span>
+                  <span className="font-bold text-lg">
+                    {userTokenBalance !== null ? userTokenBalance / 1e9 : "--"}
+                    <span className="ml-1.5 font-light text-sm">{`SOLMAN`}</span>
+                  </span>
+                </div>
+              ) : null}
+              {/* --- REPLACE INPUTS WITH TWO-WAY BINDING --- */}
+              <div className="grid gap-4 grid-cols-2 mt-4">
+                <div>
+                  <div className="flex items-center justify-between gap-3 mb-1">
+                    <span className="font-semibold text-black">You send</span>
+                    <span className="text-black">{(Math.ceil(Number(userUsdcBalance) * 100) / 100).toFixed(2)} USDC</span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-lg border border-black bg-transparent">
+                    <input
+                      className="outline-none w-[65%] bg-transparent p-3 placeholder:text-black"
+                      placeholder={`at least ${PRICE_PER_SOLMAN}`}
+                      value={usdtAmount}
+                      onChange={handleUsdtChange}
+                    />
+                    <div className="flex items-center gap-1 pr-2">
+                      <img src="./solman2.png" alt="USDC" className="w-6 h-6 object-contain" />
+                      <span className="m-text font-bold">USDC</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center justify-between gap-3 mb-1">
+                    <span className="font-semibold text-black">You’ll receive</span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-lg border border-black bg-transparent">
+                    <input
+                      className="outline-none w-[65%] bg-transparent p-3 placeholder:text-black"
+                      placeholder="0"
+                      value={solmanAmount}
+                      onChange={handleSolmanChange}
+                    />
+                    <div className="flex items-center gap-1 pr-2">
+                      <img src="./solman2.png" alt="SOLMAN" className="w-6 h-6 object-contain" />
+                      <span className="m-text font-bold">SOLMAN</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+              {/* --- END REPLACEMENT --- */}
 
-          <motion.button
-            className="outline-2 outline-black mt-6 mb-2 p-0.5 rounded-full w-full relative"
-            animate={buyControls}
-            whileTap={{ scale: 1.12 }}
-            onMouseEnter={handleBuyHover}
-            onMouseLeave={handleBuyLeave}>
-            <div className="block text-center rounded-full font-bold text-lg py-2 px-3 text-yellow-500 bg-black hover:bg-transparent w-full cursor-pointer hover:text-black">
-              BUY
-            </div>
-          </motion.button>
-          <motion.button
-            className="outline-2 outline-black mt-2 mb-2 p-0.5 rounded-full w-full relative"
-            animate={claimControls}
-            whileTap={{ scale: 1.12 }}
-            onMouseEnter={handleClaimHover}
-            onMouseLeave={handleClaimLeave}>
-            <div className="block text-center rounded-full font-bold text-lg py-2 px-3 hover:text-yellow-500 hover:bg-black bg-transparent w-full cursor-pointer text-black">
-              CLAIM
-            </div>
-          </motion.button>
+              <BuyAndClaim
+                isConnected={wallet.connected}
+                buyControls={buyControls}
+                claimControls={claimControls}
+                handleBuyHover={handleBuyHover}
+                handleBuyLeave={handleBuyLeave}
+                handleClaimHover={handleClaimHover}
+                handleClaimLeave={handleClaimLeave}
+              />
+            </>
+          )}
         </div>
       </div>
     </section>
