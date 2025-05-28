@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { motion, useAnimation } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { PublicKey, sendAndConfirmTransaction, SystemProgram, SYSVAR_RENT_PUBKEY, Transaction } from "@solana/web3.js";
@@ -32,12 +33,22 @@ const ENV_ICO_MINT = "KhdTGv2Ve1AVioVfQimLd84G4RfDUXx7m3Qf27p2tz4";
 const PROGRAM_ID = new PublicKey(ENV_PROGRAM_ID);
 const ICO_MINT = new PublicKey(ENV_ICO_MINT);
 
+// ...existing code...
 function PresaleCountdown({ startTime, endTime }) {
-  const [countdown, setCountdown] = useState("");
+  const [label, setLabel] = useState("");
+  const [time, setTime] = useState({
+    days: "00",
+    hours: "00",
+    minutes: "00",
+    seconds: "00",
+  });
+  const [ended, setEnded] = useState(false);
 
   useEffect(() => {
     if (!startTime || !endTime) {
-      setCountdown("");
+      setLabel("");
+      setTime({ days: "00", hours: "00", minutes: "00", seconds: "00" });
+      setEnded(false);
       return;
     }
     let interval;
@@ -45,42 +56,73 @@ function PresaleCountdown({ startTime, endTime }) {
       const now = Date.now();
       const start = new Date(new BN(startTime).toNumber());
       const end = new Date(new BN(endTime).toNumber());
-      let target, label;
+      let target, newLabel;
 
       if (now < start) {
         target = start;
-        label = "Starts in";
+        newLabel = "Presale starts in";
+        setEnded(false);
       } else if (now < end) {
         target = end;
-        label = "Ends in";
+        newLabel = "Presale ends in";
+        setEnded(false);
       } else {
-        setCountdown("");
+        setLabel("");
+        setEnded(true);
+        setTime({ days: "00", hours: "00", minutes: "00", seconds: "00" });
         return;
       }
 
       const diff = target - now;
-      if (diff <= 0) {
-        setCountdown(`${label}: 00 days 00 hours 00 minutes 00 seconds`);
-        return;
-      }
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      setCountdown(
-        `${label}: ${days.toString().padStart(2, "0")} days ${hours.toString().padStart(2, "0")} hours ${minutes
-          .toString()
-          .padStart(2, "0")} minutes ${seconds.toString().padStart(2, "0")} secs`
-      );
+
+      setLabel(newLabel);
+      setTime({
+        days: days.toString().padStart(2, "0"),
+        hours: hours.toString().padStart(2, "0"),
+        minutes: minutes.toString().padStart(2, "0"),
+        seconds: seconds.toString().padStart(2, "0"),
+      });
     }
     updateCountdown();
     interval = setInterval(updateCountdown, 1000);
     return () => clearInterval(interval);
   }, [startTime, endTime]);
 
-  if (!countdown) return null;
-  return <div className="mb-2 text-center text-lg font-bold text-green-700">{countdown}</div>;
+  if (ended) {
+    return (
+      <div className="w-full flex flex-col items-center my-4">
+        <div className="bg-black text-[#E7FF53] font-bold text-lg rounded-lg px-6 py-3 text-center">
+          Presale ended, You can now claim your $SOLMAN
+        </div>
+      </div>
+    );
+  }
+
+  if (!label) return null;
+  return (
+    <div className="w-full flex flex-col items-center my-4">
+      <div className="text-black font-bold text-lg mb-2">{label}</div>
+      <div className="w-full border-t border-black mb-2"></div>
+      <div className="flex justify-center gap-6 mb-1">
+        <span className="text-black font-semibold text-sm">Days</span>
+        <span className="text-black font-semibold text-sm">Hours</span>
+        <span className="text-black font-semibold text-sm">Minutes</span>
+        <span className="text-black font-semibold text-sm">Seconds</span>
+      </div>
+      <div className="flex justify-center gap-6">
+        <span className="bg-black text-[#E7FF53] font-bold text-xl rounded-lg px-4 py-1 min-w-[48px] text-center">{time.days}</span>
+        <span className="bg-black text-[#E7FF53] font-bold text-xl rounded-lg px-4 py-1 min-w-[48px] text-center">{time.hours}</span>
+        <span className="bg-black text-[#E7FF53] font-bold text-xl rounded-lg px-4 py-1 min-w-[48px] text-center">{time.minutes}</span>
+        <span className="bg-black text-[#E7FF53] font-bold text-xl rounded-lg px-4 py-1 min-w-[48px] text-center">{time.seconds}</span>
+      </div>
+    </div>
+  );
 }
+// ...existing code....
 
 export default function PresalePageClient() {
   const { connection } = useConnection();
@@ -102,6 +144,26 @@ export default function PresalePageClient() {
   const [solPriceInUsdc, setSolPriceInUsdc] = useState(null);
   const [presaleSolBalance, setPresaleSolBalance] = useState(0);
   const [presaleUsdcBalance, setPresaleUsdcBalance] = useState(0);
+
+  const buyControls = useAnimation();
+  const claimControls = useAnimation();
+
+  const handleBuyHover = () => {
+    buyControls.start({ scale: 1.08 });
+    claimControls.start({ scale: 0.95 });
+  };
+  const handleBuyLeave = () => {
+    buyControls.start({ scale: 1 });
+    claimControls.start({ scale: 1 });
+  };
+  const handleClaimHover = () => {
+    claimControls.start({ scale: 1.08 });
+    buyControls.start({ scale: 0.95 });
+  };
+  const handleClaimLeave = () => {
+    claimControls.start({ scale: 1 });
+    buyControls.start({ scale: 1 });
+  };
 
   // Utility function to fetch presale info and user/admin info
   async function getPresaleAndUserInfo(program, wallet, isAdmin = false) {
@@ -831,16 +893,16 @@ export default function PresalePageClient() {
 
   return (
     <section className="relative bg-[#E7FF53] pt-[80px] min-h-screen flex flex-col items-center justify-center transition-all" id="contact">
-      {/* Big MEMECO text */}
+      {/* Big Solman text */}
       <div className="w-full flex justify-center">
         <h1 className="font-gorditas text-black text-[80px] sm:text-[120px] md:text-[180px] lg:text-[220px] xl:text-[260px] 2xl:text-[320px] leading-[90%] text-center tracking-tight mb-0 mt-4 select-none">
-          MEMECO
+          SOLMAN
         </h1>
       </div>
 
       {/* Left mascot */}
       <img
-        src="./assets/images/mascot-left.png"
+        src="./solman2.png"
         alt="Mascot Left"
         className="hidden md:block absolute left-0 bottom-0 md:bottom-16 lg:bottom-24 xl:bottom-32 w-[260px] lg:w-[340px] z-10"
         style={{ maxWidth: "30vw" }}
@@ -848,7 +910,7 @@ export default function PresalePageClient() {
 
       {/* Right mascot */}
       <img
-        src="./assets/images/mascot-right.png"
+        src="./solman2.png"
         alt="Mascot Right"
         className="hidden md:block absolute right-0 bottom-0 md:bottom-16 lg:bottom-24 xl:bottom-32 w-[220px] lg:w-[300px] z-10"
         style={{ maxWidth: "26vw" }}
@@ -858,14 +920,28 @@ export default function PresalePageClient() {
       <div className="relative z-20 flex flex-col items-center w-full">
         <div className="mx-auto mt-4 max-w-[540px] rounded-2xl border-2 border-black bg-[#FEF200] px-6 py-8 shadow-xl">
           <div className="flex items-center justify-center gap-2 mb-6">
-            <img src="./assets/images/coin.png" alt="Coin" className="w-8 h-8" />
-            <span className="text-black font-title-font text-2xl font-bold">BUY MEMECO</span>
+            <img src="./solman2.png" alt="Coin" className="w-8 h-8 object-contain" />
+            <span className="text-black font-title-font text-2xl font-bold">BUY SOLMAN</span>
           </div>
 
           <div className="w-full flex justify-end mb-2">
-            <button className="block text-center rounded-full font-bold text-lg py-2 px-3 text-yellow-500 bg-black w-full cursor-pointer">
-              CONNECT WALLET
-            </button>
+            <WalletMultiButton
+              style={{
+                textAlign: "center",
+                borderRadius: "9999px",
+                color: "oklch(79.5% 0.184 86.047)",
+                backgroundColor: "#000",
+                width: "100%",
+                cursor: "pointer",
+                marginBottom: "20px",
+                minWidth: "200px",
+              }}>
+              {wallet.connected ? null : (
+                <button className="block text-center rounded-full font-bold text-lg py-2 px-3 text-yellow-500 bg-black w-full cursor-pointer">
+                  CONNECT WALLET
+                </button>
+              )}
+            </WalletMultiButton>
           </div>
 
           <div className="grid gap-4 grid-cols-2 mb-4">
@@ -879,35 +955,18 @@ export default function PresalePageClient() {
             </div>
           </div>
 
-          <div className="mb-2">
-            <p className="text-right font-bold text-black text-sm">$1,191,568.19 / $1,600,000</p>
-            <div className="relative mt-2 h-3 w-full bg-white rounded">
-              <div className="relative h-3 w-3/4 bg-black rounded">
-                <div className="absolute left-0 h-5 w-4 -translate-y-[23%] rounded bg-black"></div>
-                <div className="absolute right-0 h-5 w-4 -translate-y-[23%] rounded bg-black"></div>
-              </div>
-            </div>
-          </div>
+          <Progressbar raised={20} goal={200} />
 
-          <div className="mt-3 flex items-center justify-center">
-            <div className="flex items-center gap-2.5 rounded-lg bg-black px-4 py-2 text-[#E7FF53] font-semibold text-sm">
-              <span>Next price increase by</span>
-              <i className="ph-fill ph-caret-down"></i>
-              <span className="font-bold">10.14</span>
-            </div>
+          <br />
+          <PresaleCountdown startTime={icoData?.startTime} endTime={icoData?.endTime} />
+          <br />
+          <div className="flex flex-col items-start rounded-lg border border-black bg-black text-yellow-500 p-3">
+            <span className="text-xs text-white">Balance</span>
+            <span className="font-bold text-lg">
+              {userTokenBalance !== null ? userTokenBalance / 1e9 : "--"}
+              <span className="ml-1.5 font-light text-sm">{`SOLMAN`}</span>
+            </span>
           </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-3 mt-6 mb-4">
-            {["coin-icon-1", "coin-icon-2", "coin-icon-3", "coin-icon-4", "coin-icon-5", "coin-icon-6"].map((icon, index) => (
-              <div
-                key={index}
-                className="group flex cursor-pointer items-center gap-1 rounded border border-white/10 bg-white/10 p-2 duration-300 hover:bg-black">
-                <img src={`./assets/images/${icon}.png`} alt="Coin" />
-                <span className="m-text group-hover:text-[#E7FF53]">COIN</span>
-              </div>
-            ))}
-          </div>
-
           <div className="grid gap-4 grid-cols-2 mt-4">
             <div>
               <div className="flex items-center justify-between gap-3 mb-1">
@@ -915,9 +974,9 @@ export default function PresalePageClient() {
                 <span className="text-black">$ 0.00000</span>
               </div>
               <div className="flex items-center justify-between rounded-lg border border-black bg-transparent">
-                <input className="w-[65%] bg-transparent p-3 placeholder:text-black" placeholder="at least 0.001" />
+                <input className="outline-none w-[65%] bg-transparent p-3 placeholder:text-black" placeholder="at least 0.001" />
                 <div className="flex items-center gap-1 pr-2">
-                  <img src="./assets/images/coin-icon-3.png" alt="USDT" />
+                  <img src="./solman2.png" alt="USDT" className="w-6 h-6 object-contain" />
                   <span className="m-text font-bold">USDT</span>
                 </div>
               </div>
@@ -927,20 +986,35 @@ export default function PresalePageClient() {
                 <span className="font-semibold text-black">You’ll receive</span>
               </div>
               <div className="flex items-center justify-between rounded-lg border border-black bg-transparent">
-                <input className="w-[65%] bg-transparent p-3 placeholder:text-black" placeholder="0" />
+                <input className="outline-none w-[65%] bg-transparent p-3 placeholder:text-black" placeholder="0" />
                 <div className="flex items-center gap-1 pr-2">
-                  <img src="./assets/images/coin-icon-5.png" alt="LHUNT" />
-                  <span className="m-text font-bold">LHUNT</span>
+                  <img src="./solman2.png" alt="LHUNT" className="w-6 h-6 object-contain" />
+                  <span className="m-text font-bold">SOLMAN</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <button className="outline-2 outline-black mt-6 mb-2 p-0.5 rounded-full w-full relative">
+          <motion.button
+            className="outline-2 outline-black mt-6 mb-2 p-0.5 rounded-full w-full relative"
+            animate={buyControls}
+            whileTap={{ scale: 1.12 }}
+            onMouseEnter={handleBuyHover}
+            onMouseLeave={handleBuyLeave}>
             <div className="block text-center rounded-full font-bold text-lg py-2 px-3 text-yellow-500 bg-black hover:bg-transparent w-full cursor-pointer hover:text-black">
-              CONNECT WALLET
+              BUY
             </div>
-          </button>
+          </motion.button>
+          <motion.button
+            className="outline-2 outline-black mt-2 mb-2 p-0.5 rounded-full w-full relative"
+            animate={claimControls}
+            whileTap={{ scale: 1.12 }}
+            onMouseEnter={handleClaimHover}
+            onMouseLeave={handleClaimLeave}>
+            <div className="block text-center rounded-full font-bold text-lg py-2 px-3 hover:text-yellow-500 hover:bg-black bg-transparent w-full cursor-pointer text-black">
+              CLAIM
+            </div>
+          </motion.button>
         </div>
       </div>
     </section>

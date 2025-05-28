@@ -1,15 +1,19 @@
-const Progressbar = ({ done, ...props }) => {
-  const roundedDone = Math.round(done * 100) / 100; // Round to 2 significant figures
+const Progressbar = ({ raised, goal, ...props }) => {
+  // Calculate progress percentage
+  const percent = goal > 0 ? Math.min((raised / goal) * 100, 100) : 0;
+  // Format numbers with commas and 2 decimals
+  const format = (n) => n?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
   return (
-    <div className="w-full bg-gray-200 rounded-full h-5 overflow-hidden relative" {...props}>
-      <div
-        className="h-full transition-all duration-300 bg-gradient-to-r from-green-300 via-green-200 to-yellow-400"
-        style={{
-          width: `${roundedDone}%`,
-        }}>
-        <span className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-800 text-xs font-semibold w-full text-center">
-          {roundedDone}%
-        </span>
+    <div className="mb-2 w-full" {...props}>
+      <p className="text-right font-bold text-black text-sm">
+        ${format(raised)} / ${format(goal)}
+      </p>
+      <div className="relative mt-2 h-3 w-full bg-white rounded">
+        <div className="relative h-3 bg-black rounded" style={{ width: `${percent}%`, transition: "width 0.3s" }}>
+          <div className="absolute left-0 h-5 w-4 -translate-y-[23%] rounded bg-black"></div>
+          <div className="absolute right-0 h-5 w-4 -translate-y-[23%] rounded bg-gradient-to-b from-black to-yellow-800"></div>
+        </div>
       </div>
     </div>
   );
