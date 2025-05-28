@@ -17,7 +17,7 @@ import {
 import { ASSOCIATED_PROGRAM_ID } from "@project-serum/anchor/dist/cjs/utils/token";
 
 import IDL from "../../lib/solman_presale.json";
-import Progressbar from "../../components/progressbar/Progressbar";
+import Progressbar from "../../components/progressbar/Progressbar2";
 import { HermesClient } from "@pythnetwork/hermes-client";
 import { PhantomWalletName } from "@solana/wallet-adapter-wallets";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
@@ -879,7 +879,7 @@ export default function PresalePageClient() {
 
       {/* Center Card */}
       <div className="relative z-20 flex flex-col items-center w-full">
-        <div className="mx-auto mt-4 mb-10 max-w-[540px] rounded-2xl border-2 border-black bg-[#FEF200] px-6 py-8 shadow-xl">
+        <div className="mx-auto mt-4 mb-10 max-w-[540px] rounded-2xl border-2 border-black bg-[#fee000] px-6 py-8 shadow-xl">
           <div className="w-full flex justify-end mb-2">
             <WalletMultiButton
               style={{
