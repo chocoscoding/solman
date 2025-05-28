@@ -1,5 +1,4 @@
-// Fetch SOL price in USDC (USD)
-// pages/index.js
+"use client";
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
