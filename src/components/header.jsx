@@ -11,7 +11,7 @@ const navLinks = [
   { name: "ABOUT", href: "#" },
   { name: "HOW TO BUY", href: "#" },
   { name: "ROADMAP", href: "#" },
-  { name: "COMMUNITY", href: "#" },
+  { name: "PRESALE", href: "/presale" },
 ];
 
 export const HeroHeader = () => {
