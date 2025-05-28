@@ -18,6 +18,8 @@ import { ASSOCIATED_PROGRAM_ID } from "@project-serum/anchor/dist/cjs/utils/toke
 import IDL from "../../lib/solman_presale.json";
 import Progressbar from "../../components/progressbar/Progressbar";
 import { HermesClient } from "@pythnetwork/hermes-client";
+import { PhantomWalletName } from "@solana/wallet-adapter-wallets";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 
 // Dynamically import WalletMultiButton with SSR disabled
 const WalletMultiButton = dynamic(() => import("@solana/wallet-adapter-react-ui").then((mod) => mod.WalletMultiButton), { ssr: false });
@@ -83,6 +85,7 @@ function PresaleCountdown({ startTime, endTime }) {
 export default function PresalePageClient() {
   const { connection } = useConnection();
   const wallet = useWallet();
+  const { setVisible, visible } = useWalletModal();
 
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -834,6 +837,7 @@ export default function PresalePageClient() {
           MEMECO
         </h1>
       </div>
+
       {/* Left mascot */}
       <img
         src="./assets/images/mascot-left.png"
@@ -841,6 +845,7 @@ export default function PresalePageClient() {
         className="hidden md:block absolute left-0 bottom-0 md:bottom-16 lg:bottom-24 xl:bottom-32 w-[260px] lg:w-[340px] z-10"
         style={{ maxWidth: "30vw" }}
       />
+
       {/* Right mascot */}
       <img
         src="./assets/images/mascot-right.png"
@@ -848,13 +853,21 @@ export default function PresalePageClient() {
         className="hidden md:block absolute right-0 bottom-0 md:bottom-16 lg:bottom-24 xl:bottom-32 w-[220px] lg:w-[300px] z-10"
         style={{ maxWidth: "26vw" }}
       />
+
       {/* Center Card */}
       <div className="relative z-20 flex flex-col items-center w-full">
-        <div className="mx-auto mt-4 max-w-[420px] sm:max-w-[520px] md:max-w-[540px] lg:max-w-[520px] xl:max-w-[540px] rounded-2xl border-2 border-black bg-[#FEF200] px-6 py-8 shadow-xl">
+        <div className="mx-auto mt-4 max-w-[540px] rounded-2xl border-2 border-black bg-[#FEF200] px-6 py-8 shadow-xl">
           <div className="flex items-center justify-center gap-2 mb-6">
             <img src="./assets/images/coin.png" alt="Coin" className="w-8 h-8" />
             <span className="text-black font-title-font text-2xl font-bold">BUY MEMECO</span>
           </div>
+
+          <div className="w-full flex justify-end mb-2">
+            <button className="block text-center rounded-full font-bold text-lg py-2 px-3 text-yellow-500 bg-black w-full cursor-pointer">
+              CONNECT WALLET
+            </button>
+          </div>
+
           <div className="grid gap-4 grid-cols-2 mb-4">
             <div className="flex flex-col items-start rounded-lg border border-black bg-transparent p-3">
               <span className="text-xs text-black/70">Current price</span>
@@ -865,6 +878,7 @@ export default function PresalePageClient() {
               <span className="font-bold text-lg">$0.005</span>
             </div>
           </div>
+
           <div className="mb-2">
             <p className="text-right font-bold text-black text-sm">$1,191,568.19 / $1,600,000</p>
             <div className="relative mt-2 h-3 w-full bg-white rounded">
@@ -874,6 +888,7 @@ export default function PresalePageClient() {
               </div>
             </div>
           </div>
+
           <div className="mt-3 flex items-center justify-center">
             <div className="flex items-center gap-2.5 rounded-lg bg-black px-4 py-2 text-[#E7FF53] font-semibold text-sm">
               <span>Next price increase by</span>
@@ -881,32 +896,18 @@ export default function PresalePageClient() {
               <span className="font-bold">10.14</span>
             </div>
           </div>
+
           <div className="flex flex-wrap items-center justify-between gap-3 mt-6 mb-4">
-            <div className="group flex cursor-pointer items-center gap-1 rounded border border-white/10 bg-white/10 p-2 duration-300 hover:bg-black">
-              <img src="./assets/images/coin-icon-1.png" alt="USDT" />
-              <span className="m-text group-hover:text-[#E7FF53]">USDT</span>
-            </div>
-            <div className="group flex cursor-pointer items-center gap-1 rounded border border-white/10 bg-white/10 p-2 duration-300 hover:bg-black">
-              <img src="./assets/images/coin-icon-2.png" alt="USDC" />
-              <span className="m-text group-hover:text-[#E7FF53]">USDC</span>
-            </div>
-            <div className="group flex cursor-pointer items-center gap-1 rounded border border-white/10 bg-white/10 p-2 duration-300 hover:bg-black">
-              <img src="./assets/images/coin-icon-3.png" alt="ETH" />
-              <span className="m-text group-hover:text-[#E7FF53]">ETH</span>
-            </div>
-            <div className="group flex cursor-pointer items-center gap-1 rounded border border-white/10 bg-white/10 p-2 duration-300 hover:bg-black">
-              <img src="./assets/images/coin-icon-4.png" alt="CARD" />
-              <span className="m-text group-hover:text-[#E7FF53]">CARD</span>
-            </div>
-            <div className="group flex cursor-pointer items-center gap-1 rounded border border-white/10 bg-white/10 p-2 duration-300 hover:bg-black">
-              <img src="./assets/images/coin-icon-5.png" alt="BNB" />
-              <span className="m-text group-hover:text-[#E7FF53]">BNB</span>
-            </div>
-            <div className="group flex cursor-pointer items-center gap-1 rounded border border-white/10 bg-white/10 p-2 duration-300 hover:bg-black">
-              <img src="./assets/images/coin-icon-6.png" alt="MATIC" />
-              <span className="m-text group-hover:text-[#E7FF53]">MATIC</span>
-            </div>
+            {["coin-icon-1", "coin-icon-2", "coin-icon-3", "coin-icon-4", "coin-icon-5", "coin-icon-6"].map((icon, index) => (
+              <div
+                key={index}
+                className="group flex cursor-pointer items-center gap-1 rounded border border-white/10 bg-white/10 p-2 duration-300 hover:bg-black">
+                <img src={`./assets/images/${icon}.png`} alt="Coin" />
+                <span className="m-text group-hover:text-[#E7FF53]">COIN</span>
+              </div>
+            ))}
           </div>
+
           <div className="grid gap-4 grid-cols-2 mt-4">
             <div>
               <div className="flex items-center justify-between gap-3 mb-1">
@@ -923,7 +924,7 @@ export default function PresalePageClient() {
             </div>
             <div>
               <div className="flex items-center justify-between gap-3 mb-1">
-                <span className="font-semibold text-black">Youll receive</span>
+                <span className="font-semibold text-black">You’ll receive</span>
               </div>
               <div className="flex items-center justify-between rounded-lg border border-black bg-transparent">
                 <input className="w-[65%] bg-transparent p-3 placeholder:text-black" placeholder="0" />
@@ -934,22 +935,8 @@ export default function PresalePageClient() {
               </div>
             </div>
           </div>
-          <WalletMultiButton className="block text-center rounded-full font-bold text-lg py-2 px-3 text-yellow-500 bg-black hover:bg-transparent w-full cursor-pointer hover:text-black" />
+
           <button className="outline-2 outline-black mt-6 mb-2 p-0.5 rounded-full w-full relative">
-            <WalletMultiButton
-              style={{
-                display: "block",
-                textAlign: "center",
-                borderRadius: 9999,
-                fontWeight: "bold",
-                fontSize: 18,
-                padding: "8px 12px",
-                color: "#E7FF53",
-                background: "black",
-                width: "100%",
-                cursor: "pointer",
-              }}
-            />
             <div className="block text-center rounded-full font-bold text-lg py-2 px-3 text-yellow-500 bg-black hover:bg-transparent w-full cursor-pointer hover:text-black">
               CONNECT WALLET
             </div>
