@@ -1,4 +1,5 @@
-"use client";
+// Fetch SOL price in USDC (USD)
+// pages/index.js
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
@@ -18,6 +19,7 @@ import { ASSOCIATED_PROGRAM_ID } from "@project-serum/anchor/dist/cjs/utils/toke
 import IDL from "../../lib/solman_presale.json";
 import Progressbar from "../../components/progressbar/Progressbar";
 import { HermesClient } from "@pythnetwork/hermes-client";
+import { notFound } from "next/navigation";
 
 // Dynamically import WalletMultiButton with SSR disabled
 const WalletMultiButton = dynamic(() => import("@solana/wallet-adapter-react-ui").then((mod) => mod.WalletMultiButton), { ssr: false });
@@ -826,121 +828,286 @@ export default function PresalePageClient() {
     }
   };
 
+  // Throw notFound if user is not admin
+  useEffect(() => {
+    if (!loading && wallet.connected && !isAdmin) {
+      notFound();
+    }
+  }, [loading, wallet.connected, isAdmin]);
+
   return (
-    <section className="relative bg-[#E7FF53] pt-[80px] min-h-screen flex flex-col items-center justify-center" id="contact">
-      {/* Big MEMECO text */}
-      <div className="w-full flex justify-center">
-        <h1 className="font-gorditas text-black text-[80px] sm:text-[120px] md:text-[180px] lg:text-[220px] xl:text-[260px] 2xl:text-[320px] leading-[90%] text-center tracking-tight mb-0 mt-4 select-none">
-          MEMECO
-        </h1>
-      </div>
-      {/* Left mascot */}
-      <img
-        src="./assets/images/mascot-left.png"
-        alt="Mascot Left"
-        className="hidden md:block absolute left-0 bottom-0 md:bottom-16 lg:bottom-24 xl:bottom-32 w-[260px] lg:w-[340px] z-10"
-        style={{ maxWidth: "30vw" }}
-      />
-      {/* Right mascot */}
-      <img
-        src="./assets/images/mascot-right.png"
-        alt="Mascot Right"
-        className="hidden md:block absolute right-0 bottom-0 md:bottom-16 lg:bottom-24 xl:bottom-32 w-[220px] lg:w-[300px] z-10"
-        style={{ maxWidth: "26vw" }}
-      />
-      {/* Center Card */}
-      <div className="relative z-20 flex flex-col items-center w-full">
-        <div className="mx-auto mt-4 max-w-[420px] sm:max-w-[520px] md:max-w-[540px] lg:max-w-[520px] xl:max-w-[540px] rounded-2xl border-2 border-black bg-[#FEF200] px-6 py-8 shadow-xl">
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <img src="./assets/images/coin.png" alt="Coin" className="w-8 h-8" />
-            <span className="text-black font-title-font text-2xl font-bold">BUY MEMECO</span>
-          </div>
-          <div className="grid gap-4 grid-cols-2 mb-4">
-            <div className="flex flex-col items-start rounded-lg border border-black bg-transparent p-3">
-              <span className="text-xs text-black/70">Current price</span>
-              <span className="font-bold text-lg">$0.00138</span>
-            </div>
-            <div className="flex flex-col items-start rounded-lg border border-black bg-transparent p-3">
-              <span className="text-xs text-black/70">Listing Price</span>
-              <span className="font-bold text-lg">$0.005</span>
-            </div>
-          </div>
-          <div className="mb-2">
-            <p className="text-right font-bold text-black text-sm">$1,191,568.19 / $1,600,000</p>
-            <div className="relative mt-2 h-3 w-full bg-white rounded">
-              <div className="relative h-3 w-3/4 bg-black rounded">
-                <div className="absolute left-0 h-5 w-4 -translate-y-[23%] rounded bg-black"></div>
-                <div className="absolute right-0 h-5 w-4 -translate-y-[23%] rounded bg-black"></div>
-              </div>
-            </div>
-          </div>
-          <div className="mt-3 flex items-center justify-center">
-            <div className="flex items-center gap-2.5 rounded-lg bg-black px-4 py-2 text-[#E7FF53] font-semibold text-sm">
-              <span>Next price increase by</span>
-              <i className="ph-fill ph-caret-down"></i>
-              <span className="font-bold">10.14</span>
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-3 mt-6 mb-4">
-            <div className="group flex cursor-pointer items-center gap-1 rounded border border-white/10 bg-white/10 p-2 duration-300 hover:bg-black">
-              <img src="./assets/images/coin-icon-1.png" alt="USDT" />
-              <span className="m-text group-hover:text-[#E7FF53]">USDT</span>
-            </div>
-            <div className="group flex cursor-pointer items-center gap-1 rounded border border-white/10 bg-white/10 p-2 duration-300 hover:bg-black">
-              <img src="./assets/images/coin-icon-2.png" alt="USDC" />
-              <span className="m-text group-hover:text-[#E7FF53]">USDC</span>
-            </div>
-            <div className="group flex cursor-pointer items-center gap-1 rounded border border-white/10 bg-white/10 p-2 duration-300 hover:bg-black">
-              <img src="./assets/images/coin-icon-3.png" alt="ETH" />
-              <span className="m-text group-hover:text-[#E7FF53]">ETH</span>
-            </div>
-            <div className="group flex cursor-pointer items-center gap-1 rounded border border-white/10 bg-white/10 p-2 duration-300 hover:bg-black">
-              <img src="./assets/images/coin-icon-4.png" alt="CARD" />
-              <span className="m-text group-hover:text-[#E7FF53]">CARD</span>
-            </div>
-            <div className="group flex cursor-pointer items-center gap-1 rounded border border-white/10 bg-white/10 p-2 duration-300 hover:bg-black">
-              <img src="./assets/images/coin-icon-5.png" alt="BNB" />
-              <span className="m-text group-hover:text-[#E7FF53]">BNB</span>
-            </div>
-            <div className="group flex cursor-pointer items-center gap-1 rounded border border-white/10 bg-white/10 p-2 duration-300 hover:bg-black">
-              <img src="./assets/images/coin-icon-6.png" alt="MATIC" />
-              <span className="m-text group-hover:text-[#E7FF53]">MATIC</span>
-            </div>
-          </div>
-          <div className="grid gap-4 grid-cols-2 mt-4">
-            <div>
-              <div className="flex items-center justify-between gap-3 mb-1">
-                <span className="font-semibold text-black">You send</span>
-                <span className="text-black">$ 0.00000</span>
-              </div>
-              <div className="flex items-center justify-between rounded-lg border border-black bg-transparent">
-                <input className="w-[65%] bg-transparent p-3 placeholder:text-black" placeholder="at least 0.001" />
-                <div className="flex items-center gap-1 pr-2">
-                  <img src="./assets/images/coin-icon-3.png" alt="USDT" />
-                  <span className="m-text font-bold">USDT</span>
+    <div className="py-6 flex flex-col justify-center sm:py-12 min-h-screen bg-gradient-to-br from-green-300 via-yellow-200 to-yellow-400">
+      <div className="relative py-3 sm:max-w-xl sm:mx-auto">
+        <div className="relative p-4 bg-gray-50 shadow-lg sm:rounded-3xl">
+          <div className="max-w-md mx-2">
+            <div className="divide-y divide-gray-200">
+              {/* Header Section */}
+              <div className="pb-4">
+                <div className="flex justify-between items-center">
+                  <h1 className="text-2xl font-bold">Presale Page</h1>
+                  <WalletMultiButton
+                    style={{
+                      background: "#000000",
+                      marginLeft: "3px",
+                      borderRadius: "60px",
+                    }}
+                  />
                 </div>
+                {wallet.connected && (
+                  <div className="mt-4 text-sm text-gray-600 ">
+                    <p>
+                      Wallet: {wallet.publicKey.toString().slice(0, 8)}...
+                      {wallet.publicKey.toString().slice(-8)}
+                    </p>
+                    <p className="mt-1">
+                      Status:{" "}
+                      <span className={`font-semibold ${isAdmin ? "text-green-600" : "text-blue-600"}`}>{isAdmin ? "Admin" : "User"}</span>
+                    </p>
+                    <p className="mt-2 p-2 bg-gray-50 rounded-lg">
+                      <span className="text-gray-600">Your Token Balance:</span>{" "}
+                      <span className="font-semibold">
+                        {isAdmin ? (Number(userTokenBalance) / 1e9).toFixed(2) : new BN(userIcoData?.buyTokenAmount).toNumber()} tokens
+                      </span>
+                    </p>
+                  </div>
+                )}
               </div>
-            </div>
-            <div>
-              <div className="flex items-center justify-between gap-3 mb-1">
-                <span className="font-semibold text-black">Youll receive</span>
-              </div>
-              <div className="flex items-center justify-between rounded-lg border border-black bg-transparent">
-                <input className="w-[65%] bg-transparent p-3 placeholder:text-black" placeholder="0" />
-                <div className="flex items-center gap-1 pr-2">
-                  <img src="./assets/images/coin-icon-5.png" alt="LHUNT" />
-                  <span className="m-text font-bold">LHUNT</span>
+
+              {/* Main Content */}
+              {wallet.connected && (
+                <div className="py-6">
+                  {/* Always show balances for admin, or for anyone if icoData exists */}
+                  {(isAdmin || icoData) && (
+                    <div className={`mb-2 p-4 rounded-lg border border-gray-200 bg-red-50"`}>
+                      <h2 className="text-lg font-semibold mb-3">ICO Status</h2>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <p className="text-gray-600">USDC balance</p>
+                          <p>
+                            {/* Show empty string if presale not initialized */}
+                            {presaleUsdcBalance !== null && presaleUsdcBalance !== undefined ? presaleUsdcBalance.toString() : "--"}{" "}
+                            <span className="font-medium">USDC</span>
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600">SOL balance</p>
+                          <p className="">
+                            {presaleSolBalance !== null && presaleSolBalance !== undefined ? presaleSolBalance.toString() : "--"}{" "}
+                            <span className="font-medium">SOL</span>
+                          </p>
+                        </div>
+                        {icoData && (
+                          <div>
+                            <p className="text-gray-600">Deposited Token</p>
+                            <p className="font-medium">{icoData.depositTokenAmount.toString()} tokens</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ICO Status Display */}
+                  {icoData ? (
+                    <div className={`mb-2 p-4 rounded-lg border border-gray-200 ${icoData.isLive ? "bg-gray-50" : "bg-red-50"}`}>
+                      <h2 className="text-lg font-semibold mb-3">Presale Status</h2>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <p className="text-gray-600">Total Supply</p>
+                          <p className="font-medium">{icoData.depositTokenAmount.toString()} tokens</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600">Tokens Sold</p>
+                          <p className="font-medium">{icoData.soldTokenAmount ? icoData.soldTokenAmount.toString() : "0"} tokens</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600">Token Price</p>
+                          <p className="font-medium">
+                            {icoData.pricePerToken} USDC
+                            {solPriceInUsdc && (
+                              <span className="ml-2 text-xs text-gray-500">
+                                (~{(icoData.pricePerToken / solPriceInUsdc).toFixed(4)} SOL)
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600">Available</p>
+                          <p className="font-medium">{(icoData.depositTokenAmount - icoData.soldTokenAmount).toString()} tokens</p>
+                        </div>
+                      </div>
+                      <br />{" "}
+                      <div>
+                        {icoData?.isLive ? (
+                          <PresaleCountdown startTime={icoData.startTime} endTime={icoData.endTime} />
+                        ) : (
+                          <p className="mb-2 text-center font-medium text-red-600">Presale is not live yet</p>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    isAdmin && (
+                      <>
+                        <div className="mb-2 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                          <p className="text-yellow-700">Presale needs to be initialized</p>
+                        </div>
+                        {icoData ? null : (
+                          <button
+                            onClick={createPresale}
+                            disabled={loading}
+                            className="w-full p-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-colors mb-6">
+                            {loading ? "Initializing..." : "Initialize Presale"}
+                          </button>
+                        )}
+                      </>
+                    )
+                  )}
+                  {/* Progress Bar Section */}
+                  {icoData && (
+                    <div className="mb-6">
+                      <Progressbar
+                        done={
+                          icoData.depositTokenAmount && Number(icoData.depositTokenAmount) !== 0
+                            ? (parseFloat(icoData.soldTokenAmount ?? 0) / parseFloat(icoData.depositTokenAmount)) * 100
+                            : 0
+                        }
+                      />
+                    </div>
+                  )}
+
+                  {/* Action Section */}
+                  <div className="space-y-4">
+                    <input
+                      type="number"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      placeholder={isAdmin ? "Amount to initialize or deposit" : "Amount to buy"}
+                      className="w-full p-2 outline-none border rounded-lg focus:ring-1 focus:ring-green-800 focus:border-green-800"
+                      min="1"
+                      step="1"
+                    />
+
+                    {isAdmin ? (
+                      <>
+                        {isAdmin && !icoData?.isLive && (
+                          <button
+                            onClick={startPresale}
+                            disabled={loading}
+                            className="w-full p-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition-colors">
+                            {loading ? "Starting..." : "Start Presale"}
+                          </button>
+                        )}
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-semibold">Update Presale Parameters</h3>
+                          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="maxTokenAmountPerAddress">
+                            Max tokens per address
+                          </label>
+                          <input
+                            id="maxTokenAmountPerAddress"
+                            type="number"
+                            value={maxTokenAmountPerAddress}
+                            onChange={(e) => setMaxTokenAmountPerAddress(e.target.value)}
+                            placeholder="Max tokens per address"
+                            className="w-full p-2 outline-none border rounded-lg focus:ring-1 focus:ring-green-800 focus:border-green-800"
+                          />
+                          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="pricePerToken">
+                            Price per token (in USDC)
+                          </label>
+                          <input
+                            id="pricePerToken"
+                            type="number"
+                            value={pricePerToken}
+                            onChange={(e) => setPricePerToken(e.target.value)}
+                            placeholder="Price per token (in USDC)"
+                            className="w-full p-2 outline-none border rounded-lg focus:ring-1 focus:ring-green-800 focus:border-green-800"
+                          />
+                          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="startTime">
+                            Start time
+                          </label>
+                          <input
+                            id="startTime"
+                            type="datetime-local"
+                            value={startTime}
+                            onChange={(e) => setStartTime(e.target.value)}
+                            placeholder="Start time"
+                            className="w-full p-2 outline-none border rounded-lg focus:ring-1 focus:ring-green-800 focus:border-green-800"
+                          />
+                          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="endTime">
+                            End time
+                          </label>
+                          <input
+                            id="endTime"
+                            type="datetime-local"
+                            value={endTime}
+                            onChange={(e) => setEndTime(e.target.value)}
+                            placeholder="End time"
+                            className="w-full p-2 outline-none border rounded-lg focus:ring-1 focus:ring-green-800 focus:border-green-800"
+                          />
+                          <button
+                            onClick={updatePresale}
+                            disabled={loading}
+                            className="w-full p-2.5 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 disabled:bg-gray-400 transition-colors">
+                            {loading ? "Updating..." : "Update Presale"}
+                          </button>
+                        </div>
+
+                        <button
+                          onClick={withdrawSol}
+                          disabled={loading}
+                          className="w-full p-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 transition-colors">
+                          {loading ? "Withdrawing..." : "Withdraw SOL"}
+                        </button>
+
+                        <button
+                          onClick={depositTokens}
+                          disabled={loading}
+                          className="w-full p-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 transition-colors">
+                          {loading ? "Depositing..." : "Deposit Tokens"}
+                        </button>
+                        <button
+                          onClick={withdrawToken}
+                          disabled={loading}
+                          className="w-full p-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-400 transition-colors">
+                          {loading ? "Withdrawing..." : "Withdraw Tokens"}
+                        </button>
+                        <button
+                          onClick={withdrawUsdc}
+                          disabled={loading}
+                          className="w-full p-2.5 bg-pink-600 text-white rounded-lg hover:bg-pink-700 disabled:bg-gray-400 transition-colors">
+                          {loading ? "Withdrawing..." : "Withdraw USDC"}
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => buyTokens()}
+                          disabled={loading || !icoData}
+                          className="w-full p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-colors">
+                          {loading ? "Processing..." : "Buy with USDC"}
+                        </button>
+
+                        {icoData && icoData.soldTokenAmount > 0 && (
+                          <button
+                            onClick={claimTokens}
+                            disabled={loading}
+                            className="w-full p-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition-colors">
+                            {loading ? "Claiming..." : "Claim Tokens"}
+                          </button>
+                        )}
+                      </>
+                    )}
+
+                    {/* Transaction Status */}
+                    {loading && <div className="text-center animate-pulse text-gray-600">Processing transaction...</div>}
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* Not Connected State */}
+              {!wallet.connected && <div className="text-center text-gray-600">Connect your wallet to participate in the presale.</div>}
             </div>
-          </div>
-          <div>
-            <button className="block text-center mt-6 mb-2 py-3 rounded-full font-bold text-lg text-yellow-500 bg-black">
-              CONNECT WALLET
-            </button>
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }

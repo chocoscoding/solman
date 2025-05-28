@@ -9,8 +9,8 @@ import { useScroll } from "motion/react";
 const navLinks = [
   { name: "HOME", href: "#" },
   { name: "ABOUT", href: "#" },
-  { name: "HOW TO BUY", href: "#" },
   { name: "ROADMAP", href: "#" },
+  { name: "WHITEPAPER", href: "#" },
   { name: "PRESALE", href: "/presale" },
 ];
 
