@@ -57,7 +57,7 @@ export const HeroHeader = () => {
               href="https://t.me/"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-white border-2 border-black rounded boxShadow w-10 h-10 flex items-center justify-center hover:bg-[#FFD43B] transition-colors"
+              className="bg-white border-1.5 border-black rounded-lg boxShadow w-10 h-10 p-1 flex items-center justify-center hover:bg-[#FFD43B] transition-colors"
               aria-label="Telegram">
               <FaTelegram className="text-black text-xl" />
             </Link>
@@ -65,14 +65,14 @@ export const HeroHeader = () => {
               href="https://x.com/"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-white border-2 border-black rounded boxShadow w-10 h-10 flex items-center justify-center hover:bg-[#FFD43B] transition-colors"
+              className="bg-white border-1.5 border-black rounded-lg boxShadow w-10 h-10 p-1 flex items-center justify-center hover:bg-[#FFD43B] transition-colors"
               aria-label="X">
               <FaXTwitter className="text-black text-xl" />
             </Link>
           </div>
           {/* Hamburger */}
           <button
-            className="md:hidden flex items-center justify-center w-10 h-10"
+            className="md:hidden flex items-center justify-center w-10 h-10 p-1"
             onClick={() => setMenuOpen((v) => !v)}
             aria-label={menuOpen ? "Close menu" : "Open menu"}>
             {menuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
@@ -97,7 +97,7 @@ export const HeroHeader = () => {
                   href="https://t.me/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-white border-2 border-black rounded boxShadow w-10 h-10 flex items-center justify-center hover:bg-[#FFD43B] transition-colors"
+                  className="bg-white border-1.5 border-black rounded-lg boxShadow w-10 h-10 p-1 flex items-center justify-center hover:bg-[#FFD43B] transition-colors"
                   aria-label="Telegram">
                   <FaTelegram className="text-black text-xl" />
                 </Link>
@@ -105,7 +105,7 @@ export const HeroHeader = () => {
                   href="https://x.com/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-white border-2 border-black rounded boxShadow w-10 h-10 flex items-center justify-center hover:bg-[#FFD43B] transition-colors"
+                  className="bg-white border-1.5 border-black rounded-lg boxShadow w-10 h-10 p-1 flex items-center justify-center hover:bg-[#FFD43B] transition-colors"
                   aria-label="X">
                   <FaXTwitter className="text-black text-xl" />
                 </Link>
