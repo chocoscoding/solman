@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import { Marquee } from "./magicui/marquee";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
+import Link from "next/link";
+import { tiltHoverRightSpringButton, tiltHoverSpringButton } from "@/utils/animations";
 
 const Letter3DSwap = dynamic(() => import("@/fancy/components/text/letter-3d-swap"), { ssr: false });
 
@@ -54,16 +56,22 @@ export default function Hero() {
             </div>
           </div>
           <div className="flex gap-4 pt-4">
-            <button
-              className="bg-red-500 text-white px-8 py-3 text-xl font-bold rounded shadow-black hover:bg-red-600 font-gorditas cursor-pointer"
-              style={{ boxShadow: "2px 4px 0 0 #000, 0 0 1px 0 #000" }}>
-              BUY $SOLMAN
-            </button>
-            <button
-              className="bg-white text-black px-8 py-3 text-xl font-bold rounded shadow-black hover:bg-gray-100 font-gorditas cursor-pointer"
-              style={{ boxShadow: "2px 4px 0 0 #000, 0 0 1px 0 #000" }}>
-              RAYDIUM
-            </button>
+            <Link>
+              <motion.button
+                {...tiltHoverSpringButton}
+                className="bg-red-500 text-white px-8 py-3 text-xl font-bold rounded shadow-black hover:bg-red-600 font-gorditas cursor-pointer"
+                style={{ boxShadow: "2px 4px 0 0 #000, 0 0 1px 0 #000" }}>
+                BUY $SOLMAN
+              </motion.button>
+            </Link>
+            <Link>
+              <motion.button
+                {...tiltHoverRightSpringButton}
+                className="bg-white text-black px-8 py-3 text-xl font-bold rounded shadow-black hover:bg-gray-100 font-gorditas cursor-pointer"
+                style={{ boxShadow: "2px 4px 0 0 #000, 0 0 1px 0 #000" }}>
+                RAYDIUM
+              </motion.button>
+            </Link>
           </div>
         </motion.div>
 
