@@ -15,7 +15,12 @@ export default function BuyAndClaim({
   icoData,
   userIcoData,
 }) {
-  if (!isConnected) return <p className="mt-4 w-full text-center font-bold text-black">Connect Wallet to Buy</p>;
+  if (!isConnected)
+    return (
+      <div className="block text-center rounded-full font-bold text-lg py-2 px-3 text-black bg-black/40 border border-black/40 mt-5 w-full">
+        Connect Wallet to Buy 👆
+      </div>
+    );
 
   // Presale logic
   const now = Date.now();

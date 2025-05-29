@@ -19,11 +19,13 @@ import { ASSOCIATED_PROGRAM_ID } from "@project-serum/anchor/dist/cjs/utils/toke
 import IDL from "../../lib/solman_presale.json";
 import Progressbar from "../../components/progressbar/Progressbar";
 import { HermesClient } from "@pythnetwork/hermes-client";
-import { PhantomWalletName } from "@solana/wallet-adapter-wallets";
-import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { FaSpinner } from "react-icons/fa6";
 import PresaleCountdown from "@/components/presale/PresaleCountdown";
 import BuyAndClaim from "@/components/presale/BuyAndClaim";
+
+import TwoWayBinding from "@/components/presale/TwoWayBinding";
+import { toast } from "sonner";
+import TwoWayBindingInput from "@/components/presale/TwoWayBinding";
 
 // Dynamically import WalletMultiButton with SSR disabled
 const WalletMultiButton = dynamic(() => import("@solana/wallet-adapter-react-ui").then((mod) => mod.WalletMultiButton), { ssr: false });
@@ -54,7 +56,6 @@ export default function PresalePageClient() {
   const [endTime, setEndTime] = useState(0);
   const [userUsdcBalance, setUserUsdcBalance] = useState(null);
 
-  const [solPriceInUsdc, setSolPriceInUsdc] = useState(null);
   const [presaleSolBalance, setPresaleSolBalance] = useState(0);
   const [presaleUsdcBalance, setPresaleUsdcBalance] = useState(0);
 
@@ -93,13 +94,19 @@ export default function PresalePageClient() {
     let userInfoPda = null,
       userInfo = null;
     if (walletConnected) {
-      if (!isAdmin) {
-        [userInfoPda] = PublicKey.findProgramAddressSync([Buffer.from("user"), wallet.publicKey.toBuffer()], program.programId);
-        try {
-          userInfo = await program.account.userInfo.fetch(userInfoPda);
-        } catch {
-          userInfo = null;
-        }
+      const [userInfoPda] = PublicKey.findProgramAddressSync(
+        [
+          Buffer.from("user"),
+          wallet.publicKey.toBuffer(), // wallet is the buyer
+        ],
+        program.programId
+      );
+
+      try {
+        userInfo = await program.account.userInfo.fetch(userInfoPda);
+      } catch (error) {
+        console.log(error);
+        userInfo = null;
       }
     }
 
@@ -120,34 +127,6 @@ export default function PresalePageClient() {
       setEndTime(new Date(new BN(icoData.endTime).toNumber()).toISOString().substring(0, 16) || "");
     }
   }, [icoData]);
-
-  const fetchSolPrice = async () => {
-    try {
-      const hermesClient = new HermesClient("https://hermes.pyth.network/", {});
-
-      // Specify the price feed ID and the TWAP window in seconds (maximum 600 seconds)
-      const twapWindowSeconds = 3; // 5 minutes
-      const twapUpdateData = await hermesClient.getLatestTwaps(
-        ["0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d"], // SOL/USD feed ID
-        twapWindowSeconds,
-        { encoding: "base64" }
-      );
-
-      // TWAP updates are strings of base64-encoded binary data
-      const solPrice = twapUpdateData.parsed[0].twap.price / 1e8;
-      const roundedSolPrice = Math.round(solPrice * 100) / 100;
-      setSolPriceInUsdc(roundedSolPrice);
-    } catch (error) {
-      console.error("Error fetching SOL price:", error);
-      setSolPriceInUsdc(null);
-    }
-  };
-
-  useEffect(() => {
-    fetchSolPrice();
-    const interval = setInterval(fetchSolPrice, 9000);
-    return () => clearInterval(interval);
-  }, []);
 
   const getProgram = () => {
     const provider = new AnchorProvider(connection, wallet, {
@@ -173,6 +152,7 @@ export default function PresalePageClient() {
       if (!program) return;
       const isAdmin = CheckIsAdmin();
       const { presaleInfo, userInfo } = await getPresaleAndUserInfo(program, wallet, isAdmin);
+
       const mainICO = presaleInfo.account;
       setIcoData({
         tokenMintAddress: mainICO.tokenMintAddress?.toString() || "N/A",
@@ -190,7 +170,7 @@ export default function PresalePageClient() {
         isHardCapped: mainICO.isHardCapped || false,
         totalTokens: new BN(mainICO.hardcapAmount) || 0,
       });
-      if (!isAdmin && userInfo) {
+      if (userInfo) {
         // setUserTokenBalance(new BN(userInfo.buyTokenAmount).toNumber());
         setUserIcoData(userInfo);
       }
@@ -260,13 +240,17 @@ export default function PresalePageClient() {
   }, [icoData]);
 
   const buyTokens = async () => {
+    const toast1 = toast.loading("Claiming Tokens", {
+      duration: Infinity,
+    });
     try {
       if (!amount || Number(amount) <= 0) {
-        alert("Please enter a valid amount");
+        toast.error("Please enter a valid amount", {
+          id: toast1,
+          duration: 2,
+        });
         return;
       }
-
-      setLoading(true);
 
       const program = getProgram();
       if (!program) return;
@@ -302,30 +286,31 @@ export default function PresalePageClient() {
       });
 
       const txSig = await tx.rpc();
-      console.log("Transaction Signature:", txSig);
 
       const txDetails = await connection.getParsedTransaction(txSig, {
         commitment: "confirmed",
         maxSupportedTransactionVersion: 0,
       });
-
-      const logs = txDetails?.meta?.logMessages ?? [];
-
-      logs.forEach((log) => console.log("Program log:", log));
-
-      await fetchIcoData();
       await fetchUserTokenBalance();
+      toast.success(amount + "SOLMAN bought successfully", {
+        id: toast1,
+      });
     } catch (error) {
       console.error("Error buying tokens:", error);
-      alert(`Error: ${error.message}`);
+      toast.success("Error: " + error.message, {
+        id: toast1,
+      });
     } finally {
-      setLoading(false);
+      await fetchIcoData();
+      toast.dismiss(toast1);
     }
   };
 
   const claimTokens = async () => {
+    const toast1 = toast.loading("Claiming Tokens", {
+      duration: Infinity,
+    });
     try {
-      setLoading(true);
       const program = getProgram();
       if (!program) return;
 
@@ -366,44 +351,23 @@ export default function PresalePageClient() {
         })
         .rpc();
 
-      const txDetails = await connection.getParsedTransaction(txSig, {
+      await connection.getParsedTransaction(txSig, {
         commitment: "confirmed",
         maxSupportedTransactionVersion: 0,
       });
-      const logs = txDetails?.meta?.logMessages ?? [];
-      logs.forEach((log) => console.log("Program log:", log));
-
-      console.log("Claim successful. Tx:", txSig);
-      alert("Tokens claimed successfully!");
       await fetchUserTokenBalance();
+      toast.success("Token claimed to wallet successfully", {
+        id: toast1,
+      });
     } catch (error) {
       console.error("Error claiming tokens:", error);
-      alert(`Error: ${error.message}`);
+      toast.success("Error claiming token: " + error.message, {
+        id: toast1,
+      });
     } finally {
-      setLoading(false);
+      fetchIcoData();
+      toast.dismiss(toast1);
     }
-  };
-
-  // Two-way binding for USDT <-> SOLMAN
-  const [usdtAmount, setUsdtAmount] = useState("");
-  const [solmanAmount, setSolmanAmount] = useState("");
-
-  // When USDT changes, update SOLMAN
-  const handleUsdtChange = (e) => {
-    const value = e.target.value.replace(/[^0-9.]/g, "");
-    setUsdtAmount(value);
-    const num = parseFloat(value);
-    setSolmanAmount(num && num > 0 ? (num / PRICE_PER_SOLMAN).toFixed(4) : "");
-    setAmount(value); // keep original amount state in sync if needed for buyTokens
-  };
-
-  // When SOLMAN changes, update USDT
-  const handleSolmanChange = (e) => {
-    const value = e.target.value.replace(/[^0-9.]/g, "");
-    setSolmanAmount(value);
-    const num = parseFloat(value);
-    setUsdtAmount(num && num > 0 ? (num * PRICE_PER_SOLMAN).toFixed(4) : "");
-    setAmount(num && num > 0 ? (num * PRICE_PER_SOLMAN).toFixed(4) : ""); // keep original amount state in sync if needed
   };
 
   const fetchUserUsdcBalance = async () => {
@@ -521,51 +485,22 @@ export default function PresalePageClient() {
                   <div className="flex flex-col items-start rounded-lg border border-black bg-yellow-100 text-black p-3">
                     <span className="text-xs text-black/70">Unclaimed Tokens</span>
                     <span className="font-bold text-lg">
-                      {userIcoData && userIcoData.buyTokenAmount ? new BN(userInfo.buyTokenAmount).toNumber() / 1e9 : 0}
+                      {userIcoData?.buyTokenAmount ? new BN(userIcoData.buyTokenAmount).toString() : "0"}
                       <span className="ml-1.5 font-light text-sm">SOLMAN</span>
                     </span>
                   </div>
                 </>
               )}
-              {/* --- REPLACE INPUTS WITH TWO-WAY BINDING --- */}
-              <div className="grid gap-4 grid-cols-2 mt-4">
-                <div>
-                  <div className="flex items-center justify-between gap-3 mb-1">
-                    <span className="font-semibold text-black">You send</span>
-                    <span className="text-black">{(Math.ceil(Number(userUsdcBalance) * 100) / 100).toFixed(2)} USDC</span>
-                  </div>
-                  <div className="flex items-center justify-between rounded-lg border border-black bg-transparent">
-                    <input
-                      className="outline-none w-[65%] bg-transparent p-3 placeholder:text-black"
-                      placeholder={`0`}
-                      value={usdtAmount}
-                      onChange={handleUsdtChange}
-                    />
-                    <div className="flex items-center gap-1 pr-2">
-                      <img src="./solman2.png" alt="USDC" className="w-6 h-6 object-contain" />
-                      <span className="m-text font-bold">USDC</span>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex items-center justify-between gap-3 mb-1">
-                    <span className="font-semibold text-black">You’ll receive</span>
-                  </div>
-                  <div className="flex items-center justify-between rounded-lg border border-black bg-transparent">
-                    <input
-                      className="outline-none w-[65%] bg-transparent p-3 placeholder:text-black"
-                      placeholder="0"
-                      value={solmanAmount}
-                      onChange={handleSolmanChange}
-                    />
-                    <div className="flex items-center gap-1 pr-2">
-                      <img src="./solman2.png" alt="SOLMAN" className="w-6 h-6 object-contain" />
-                      <span className="m-text font-bold">SOLMAN</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {/* --- END REPLACEMENT --- */}
+
+              {/* --- TWO-WAY BINDING COMPONENT --- */}
+              <TwoWayBindingInput
+                userUsdcBalance={userUsdcBalance}
+                pricePerToken={PRICE_PER_SOLMAN}
+                onChange={({ usdtAmount, solmanAmount }) => {
+                  setAmount(usdtAmount);
+                }}
+              />
+              {/* --- END TWO-WAY BINDING COMPONENT --- */}
 
               <BuyAndClaim
                 buyToken={buyTokens}
