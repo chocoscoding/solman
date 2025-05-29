@@ -14,6 +14,10 @@ const Progressbar = ({ raised, goal, ...props }) => {
           <div className="absolute left-0 h-5 w-4 -translate-y-[23%] rounded bg-black"></div>
           <div className="absolute right-0 h-5 w-4 -translate-y-[23%] rounded bg-gradient-to-b from-black to-yellow-800"></div>
         </div>
+        {/* Percentage number below current position */}
+        <div className="absolute left-0 top-full mt-1 text-xs font-semibold text-black" style={{ left: `calc(${percent}% - 18px)` }}>
+          {percent.toFixed(1)}%
+        </div>
       </div>
     </div>
   );

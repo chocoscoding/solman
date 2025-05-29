@@ -257,7 +257,6 @@ export default function PresalePageClient() {
 
       // Get the presaleInfo PDA
       const presaleInfoAll = await program.account.presaleInfo.all();
-      const presaleInfoAll2 = await program.account.userInfo.all();
       const presaleInfoPda = presaleInfoAll[0].publicKey;
 
       // Prepare USDC mint and user's USDC token account
@@ -265,7 +264,7 @@ export default function PresalePageClient() {
       const buyerUsdcAccount = getAssociatedTokenAddressSync(usdcMint, wallet.publicKey, true);
       const presaleVaultUsdcAccount = getAssociatedTokenAddressSync(usdcMint, presaleInfoPda, true);
 
-      let quoteAmountBN = new BN(Math.floor(amount * 1_000_000));
+      let quoteAmountBN = new BN(amount * 1_000_000);
 
       const [userInfoPda] = PublicKey.findProgramAddressSync(
         [
@@ -468,7 +467,7 @@ export default function PresalePageClient() {
                 </div>
               </div>
 
-              <Progressbar raised={20} goal={200} />
+              <Progressbar raised={icoData.soldTokenAmount ?? 0} goal={icoData.depositTokenAmount ?? 0} />
 
               <br />
               <PresaleCountdown startTime={icoData?.startTime} endTime={icoData?.endTime} />

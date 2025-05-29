@@ -18,7 +18,6 @@ import { ASSOCIATED_PROGRAM_ID } from "@project-serum/anchor/dist/cjs/utils/toke
 import IDL from "../../lib/solman_presale.json";
 import Progressbar from "../../components/progressbar/Progressbar2";
 import { HermesClient } from "@pythnetwork/hermes-client";
-import { notFound } from "next/navigation";
 import { FaSpinner } from "react-icons/fa";
 
 // Dynamically import WalletMultiButton with SSR disabled
@@ -405,7 +404,7 @@ export default function PresalePageClient() {
       const buyerUsdcAccount = getAssociatedTokenAddressSync(usdcMint, wallet.publicKey, true);
       const presaleVaultUsdcAccount = getAssociatedTokenAddressSync(usdcMint, presaleInfoPda, true);
 
-      let quoteAmountBN = new BN(Math.floor(amount * 1_000_000));
+      let quoteAmountBN = new BN(amount * 1_000_000);
 
       const [userInfoPda] = PublicKey.findProgramAddressSync(
         [
