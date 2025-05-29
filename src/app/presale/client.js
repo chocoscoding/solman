@@ -191,7 +191,7 @@ export default function PresalePageClient() {
         totalTokens: new BN(mainICO.hardcapAmount) || 0,
       });
       if (!isAdmin && userInfo) {
-        setUserTokenBalance(new BN(userInfo.buyTokenAmount).toNumber());
+        // setUserTokenBalance(new BN(userInfo.buyTokenAmount).toNumber());
         setUserIcoData(userInfo);
       }
     } catch (error) {
@@ -207,27 +207,17 @@ export default function PresalePageClient() {
     const isAdmin = CheckIsAdmin();
     const program = getProgram();
     if (!program) return;
-    if (isAdmin) {
+    try {
+      const userAta = await getAssociatedTokenAddress(ICO_MINT, wallet.publicKey);
       try {
-        const userAta = await getAssociatedTokenAddress(ICO_MINT, wallet.publicKey);
-        try {
-          const tokenAccount = await getAccount(connection, userAta);
-          setUserTokenBalance(tokenAccount.amount.toString());
-        } catch (e) {
-          setUserTokenBalance("0");
-        }
-      } catch (error) {
-        console.error("Error fetching token balance:", error);
+        const tokenAccount = await getAccount(connection, userAta);
+        setUserTokenBalance(tokenAccount.amount.toString());
+      } catch (e) {
         setUserTokenBalance("0");
       }
-    } else {
-      try {
-        const { userInfo } = await getPresaleAndUserInfo(program, wallet, false);
-        setUserTokenBalance(new BN(userInfo?.buyTokenAmount || 0).toNumber());
-        setUserIcoData(userInfo);
-      } catch (error) {
-        setUserTokenBalance("0");
-      }
+    } catch (error) {
+      console.error("Error fetching token balance:", error);
+      setUserTokenBalance("0");
     }
   };
 
@@ -519,15 +509,24 @@ export default function PresalePageClient() {
               <br />
               <PresaleCountdown startTime={icoData?.startTime} endTime={icoData?.endTime} />
               <br />
-              {wallet.connected ? (
-                <div className="flex flex-col items-start rounded-lg border border-black bg-black text-yellow-500 p-3">
-                  <span className="text-xs text-white">Balance</span>
-                  <span className="font-bold text-lg">
-                    {userTokenBalance !== null ? userTokenBalance / 1e9 : "--"}
-                    <span className="ml-1.5 font-light text-sm">{`SOLMAN`}</span>
-                  </span>
-                </div>
-              ) : null}
+              {wallet.connected && (
+                <>
+                  <div className="flex flex-col items-start rounded-lg border border-black bg-black text-yellow-500 p-3 mb-2">
+                    <span className="text-xs text-white">Main Balance</span>
+                    <span className="font-bold text-lg">
+                      {userTokenBalance !== null ? userTokenBalance / 1e9 : "--"}
+                      <span className="ml-1.5 font-light text-sm">SOLMAN</span>
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-start rounded-lg border border-black bg-yellow-100 text-black p-3">
+                    <span className="text-xs text-black/70">Unclaimed Tokens</span>
+                    <span className="font-bold text-lg">
+                      {userIcoData && userIcoData.buyTokenAmount ? new BN(userInfo.buyTokenAmount).toNumber() / 1e9 : 0}
+                      <span className="ml-1.5 font-light text-sm">SOLMAN</span>
+                    </span>
+                  </div>
+                </>
+              )}
               {/* --- REPLACE INPUTS WITH TWO-WAY BINDING --- */}
               <div className="grid gap-4 grid-cols-2 mt-4">
                 <div>
@@ -538,7 +537,7 @@ export default function PresalePageClient() {
                   <div className="flex items-center justify-between rounded-lg border border-black bg-transparent">
                     <input
                       className="outline-none w-[65%] bg-transparent p-3 placeholder:text-black"
-                      placeholder={`at least ${PRICE_PER_SOLMAN}`}
+                      placeholder={`0`}
                       value={usdtAmount}
                       onChange={handleUsdtChange}
                     />
@@ -578,6 +577,8 @@ export default function PresalePageClient() {
                 handleBuyLeave={handleBuyLeave}
                 handleClaimHover={handleClaimHover}
                 handleClaimLeave={handleClaimLeave}
+                icoData={icoData}
+                userIcoData={userIcoData}
               />
             </>
           )}
