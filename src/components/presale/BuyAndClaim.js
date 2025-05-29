@@ -9,11 +9,14 @@ export default function BuyAndClaim({
   handleClaimHover,
   handleClaimLeave,
   isConnected,
+  buyToken,
+  claimToken,
 }) {
   if (!isConnected) return <p className="mt-4 w-full text-center font-bold text-black">Connect Wallet to Buy</p>;
   return (
     <>
       <motion.button
+        onClick={buyToken}
         className="outline-2 outline-black mt-6 mb-2 p-0.5 rounded-full w-full relative"
         animate={buyControls}
         onMouseEnter={handleBuyHover}
@@ -23,6 +26,7 @@ export default function BuyAndClaim({
         </div>
       </motion.button>
       <motion.button
+        onClick={claimToken}
         className="outline-2 outline-black mt-2 mb-2 p-0.5 rounded-full w-full relative"
         animate={claimControls}
         onMouseEnter={handleClaimHover}

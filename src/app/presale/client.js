@@ -41,10 +41,8 @@ const ICO_MINT = new PublicKey(ENV_ICO_MINT);
 export default function PresalePageClient() {
   const { connection } = useConnection();
   const wallet = useWallet();
-  const { setVisible, visible } = useWalletModal();
 
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [icoData, setIcoData] = useState(null);
   const [userIcoData, setUserIcoData] = useState(null);
   const [amount, setAmount] = useState("");
@@ -157,23 +155,6 @@ export default function PresalePageClient() {
     });
     return new Program(IDL, provider);
   };
-
-  const checkIfAdmin = async () => {
-    try {
-      if (!wallet.connected) return;
-
-      // Check if the wallet address matches the admin address
-      const adminAddress = "3JFwGRwwY6UMo4bGt4sFnLLTmxg5iyoMuNKQPf6oAucF";
-      setIsAdmin(wallet.publicKey.toString() === adminAddress);
-    } catch (error) {
-      console.error("Error checking admin status:", error);
-      setIsAdmin(false);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Cleaned up: fetchAllIcoData and fetchUserIcoData merged into fetchIcoData below
 
   const CheckIsAdmin = () => {
     if (!wallet.connected) return false;
@@ -288,35 +269,6 @@ export default function PresalePageClient() {
     refreshPresaleBalances();
   }, [icoData]);
 
-  const createPresale = async () => {
-    try {
-      const startTimestamp = Date.now(); // Convert to seconds
-      const endTimestamp = startTimestamp + 30 * 24 * 60 * 60; // 30 days in seconds
-
-      setLoading(true);
-      const program = getProgram();
-      if (!program) return;
-
-      const usdcMint = new PublicKey("Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr");
-
-      await program.methods
-        .createPresale(new PublicKey(ICO_MINT), new BN(10), new BN(0.1 * 1e6), new BN(startTimestamp), new BN(endTimestamp))
-        .accounts({
-          authority: wallet.publicKey,
-          usdcMint: usdcMint,
-        })
-        .rpc();
-
-      alert("Presale created successfully!");
-      await fetchIcoData();
-    } catch (error) {
-      console.error("Error creating presale:", error);
-      alert(`Error: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const buyTokens = async () => {
     try {
       if (!amount || Number(amount) <= 0) {
@@ -375,290 +327,6 @@ export default function PresalePageClient() {
       await fetchUserTokenBalance();
     } catch (error) {
       console.error("Error buying tokens:", error);
-      alert(`Error: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const startPresale = async () => {
-    try {
-      setLoading(true);
-      const program = getProgram();
-      if (!program) return;
-
-      const presaleInfoAll = await program.account.presaleInfo.all();
-      const presaleInfoPda = presaleInfoAll[0].publicKey;
-
-      // Convert timestamps to seconds for blockchain
-      const startTimestamp = Date.now(); // Current time in seconds
-      const endTimestamp = startTimestamp + 30 * 24 * 60 * 60; // 30 days in seconds
-
-      const usdcMint = new PublicKey("Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr");
-      const presaleVaultUsdcAccount = await getAssociatedTokenAddress(usdcMint, presaleInfoPda, true);
-
-      // Ensure ATA exists
-      try {
-        await getAccount(connection, presaleVaultUsdcAccount);
-      } catch (e) {
-        if (e instanceof TokenAccountNotFoundError) {
-          const ataIx = createAssociatedTokenAccountInstruction(wallet.publicKey, presaleVaultUsdcAccount, presaleInfoPda, usdcMint);
-          const tx = new Transaction().add(ataIx);
-          await wallet.sendTransaction(tx, connection);
-        } else {
-          throw e;
-        }
-      }
-
-      await program.methods
-        .startPresale(new BN(startTimestamp), new BN(endTimestamp))
-        .accounts({
-          presaleInfo: presaleInfoPda,
-          admin: wallet.publicKey,
-          presaleVaultUsdcAccount: presaleVaultUsdcAccount,
-        })
-        .rpc();
-
-      alert("Presale started successfully!");
-    } catch (error) {
-      console.error("Error starting presale:", error);
-      alert(`Error: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updatePresale = async () => {
-    try {
-      setLoading(true);
-      const program = getProgram();
-      if (!program) return;
-
-      const presaleInfoAll = await program.account.presaleInfo.all();
-      const presaleInfoPda = presaleInfoAll[0].publicKey;
-
-      // Convert timestamps to seconds for blockchain
-      const startTimestamp = new Date(startTime).getTime();
-      const endTimestamp = new Date(endTime).getTime();
-
-      await program.methods
-        .updatePresale(
-          new BN(maxTokenAmountPerAddress),
-          new BN(pricePerToken * 1e9), // Assuming price is in USDC
-          new BN(startTimestamp),
-          new BN(endTimestamp)
-        )
-        .accounts({
-          presaleInfo: presaleInfoPda,
-          authority: wallet.publicKey,
-        })
-        .rpc();
-
-      alert("Presale updated successfully!");
-      await fetchIcoData();
-    } catch (error) {
-      console.error("Error updating presale:", error);
-      alert(`Error: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const withdrawSol = async () => {
-    try {
-      if (!amount || Number(amount) <= 0) {
-        alert("Please enter a valid amount");
-        return;
-      }
-
-      setLoading(true);
-
-      const program = getProgram();
-      if (!program || !wallet.publicKey) {
-        alert("Program or wallet not found");
-        return;
-      }
-
-      // 1. Get presaleInfo PDA
-      const presaleInfoAll = await program.account.presaleInfo.all();
-      if (presaleInfoAll.length === 0) {
-        alert("No presale info found");
-        return;
-      }
-      const presaleInfo = presaleInfoAll[0];
-      const presaleInfoPda = presaleInfo.publicKey;
-
-      // 2. Derive presaleVault PDA
-      const [presaleVaultPda, vaultBump] = PublicKey.findProgramAddressSync([Buffer.from("vault")], program.programId);
-
-      const presaleSolBalance = await connection.getBalance(presaleVaultPda);
-      console.log("Vault balance:", presaleSolBalance);
-      console.log("Vault address:", presaleVaultPda.toBase58());
-
-      if (Number(amount) > presaleSolBalance / web3.LAMPORTS_PER_SOL) {
-        alert("Withdraw amount exceeds vault balance");
-        return;
-      }
-
-      // 3. Call withdrawSol
-      await program.methods
-        .withdrawSol(new BN(Number(amount) * web3.LAMPORTS_PER_SOL), vaultBump)
-        .accounts({
-          presaleInfo: presaleInfoPda,
-          presaleVault: presaleVaultPda,
-          admin: wallet.publicKey,
-          systemProgram: web3.SystemProgram.programId,
-        })
-        .rpc();
-
-      alert("SOL withdrawn successfully!");
-    } catch (error) {
-      console.error("Error withdrawing SOL:", error);
-      alert(`Error: ${error.message}`);
-    } finally {
-      refreshPresaleBalances();
-      setLoading(false);
-    }
-  };
-
-  const withdrawToken = async () => {
-    try {
-      if (!amount || Number(amount) <= 0) {
-        alert("Please enter a valid amount");
-        return;
-      }
-
-      setLoading(true);
-      const program = getProgram();
-      if (!program) return;
-
-      // 1. Fetch presaleInfo PDA and authority
-      const presaleInfoAll = await program.account.presaleInfo.all();
-      const presaleInfo = presaleInfoAll[0];
-      const presaleInfoPda = presaleInfo.publicKey;
-      const authority = presaleInfo.account.authority;
-
-      // 2. Get token mint address
-      const mintPk = new PublicKey(ICO_MINT);
-
-      // 3. Derive admin ATA
-      const adminAta = getAssociatedTokenAddressSync(mintPk, wallet.publicKey);
-
-      // Derive presale_info PDA and bump
-      const [_presaleInfoPda, presaleInfoBump] = PublicKey.findProgramAddressSync(
-        [Buffer.from("presale"), authority.toBuffer()],
-        program.programId
-      );
-      // Derive presale ATA (owned by presaleInfo PDA, allowOwnerOffCurve)
-      const [presaleAta, bump] = PublicKey.findProgramAddressSync(
-        [Buffer.from("presale_token"), presaleInfoPda.toBuffer()],
-        program.programId
-      );
-
-      // 6. Ensure both token accounts exist
-      const tx = new Transaction();
-      try {
-        // Get admin ATA info and balance
-        const adminAtaInfo = await getAccount(program.provider.connection, adminAta);
-        console.log("Admin ATA address:", adminAta.toBase58());
-        console.log("Admin ATA balance:", adminAtaInfo.amount.toString());
-      } catch {
-        tx.add(createAssociatedTokenAccountInstruction(wallet.publicKey, adminAta, wallet.publicKey, mintPk));
-      }
-
-      try {
-        const presaleAtaInfo = await getAccount(program.provider.connection, presaleAta);
-        console.log("Presale ATA address:", presaleAta.toBase58());
-        console.log("Presale ATA balance:", presaleAtaInfo.amount.toString());
-      } catch {
-        tx.add(createAssociatedTokenAccountInstruction(wallet.publicKey, presaleAta, presaleInfoPda, mintPk));
-      }
-
-      if (tx.instructions.length > 0) {
-        tx.feePayer = wallet.publicKey;
-        tx.recentBlockhash = (await program.provider.connection.getLatestBlockhash()).blockhash;
-
-        const signedTx = await wallet.signTransaction(tx);
-        const txid = await program.provider.connection.sendRawTransaction(signedTx.serialize(), {
-          skipPreflight: false,
-          preflightCommitment: "confirmed",
-        });
-
-        await program.provider.connection.confirmTransaction(txid, "confirmed");
-      }
-
-      // 7. Call withdrawToken
-      await program.methods
-        .withdrawToken(new BN(Number(amount * 1e9)), presaleInfoBump)
-        .accounts({
-          mintAccount: mintPk,
-          adminAssociatedTokenAccount: adminAta,
-          presaleAssociatedTokenAccount: presaleAta,
-          presaleTokenMintAccount: mintPk,
-          presaleInfo: presaleInfoPda,
-          admin: wallet.publicKey,
-          rent: SYSVAR_RENT_PUBKEY,
-          systemProgram: SystemProgram.programId,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          associatedTokenProgram: ASSOCIATED_PROGRAM_ID,
-        })
-        .rpc();
-
-      alert("✅ SPL Tokens withdrawn successfully!");
-    } catch (error) {
-      console.error("Error withdrawing tokens:", error);
-      alert(`❌ Error: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const withdrawUsdc = async () => {
-    try {
-      if (!amount || Number(amount) <= 0) {
-        alert("Please enter a valid amount");
-        return;
-      }
-
-      setLoading(true);
-      const program = getProgram();
-      if (!program) return;
-
-      const presaleInfoAll = await program.account.presaleInfo.all();
-      const presaleInfoPda = presaleInfoAll[0].publicKey;
-
-      const usdcMintAddress = presaleInfoAll[0].account.usdcMintAddress;
-
-      const presaleVaultUsdcAccount = await getAssociatedTokenAddress(usdcMintAddress, presaleInfoPda, true);
-      const adminUsdcAccount = await getAssociatedTokenAddress(usdcMintAddress, wallet.publicKey);
-
-      // Ensure admin ATA exists
-      try {
-        await getAccount(connection, adminUsdcAccount);
-      } catch (error) {
-        if (error instanceof TokenAccountNotFoundError) {
-          const ataIx = createAssociatedTokenAccountInstruction(wallet.publicKey, adminUsdcAccount, wallet.publicKey, usdcMintAddress);
-          const transaction = new Transaction().add(ataIx);
-          await wallet.sendTransaction(transaction, connection);
-        } else {
-          throw error;
-        }
-      }
-
-      await program.methods
-        .withdrawUsdc(new BN(amount))
-        .accounts({
-          presaleInfo: presaleInfoPda,
-          presaleVaultUsdcAccount: presaleVaultUsdcAccount,
-          admin: wallet.publicKey,
-          adminUsdcAccount: adminUsdcAccount,
-          tokenProgram: TOKEN_PROGRAM_ID,
-        })
-        .rpc();
-
-      alert("USDC withdrawn successfully!");
-    } catch (error) {
-      console.error("Error withdrawing USDC:", error);
       alert(`Error: ${error.message}`);
     } finally {
       setLoading(false);
@@ -726,83 +394,6 @@ export default function PresalePageClient() {
     }
   };
 
-  const depositTokens = async () => {
-    try {
-      if (!amount || Number(amount) <= 0) {
-        alert("Enter a valid amount to deposit");
-        return;
-      }
-      setLoading(true);
-
-      const program = getProgram();
-      if (!program || !wallet.publicKey) {
-        alert("Wallet not connected or program not loaded");
-        return;
-      }
-
-      // Fetch presale info PDA and authority
-      const presaleInfoAll = await program.account.presaleInfo.all();
-      if (presaleInfoAll.length === 0) {
-        alert("Presale not initialized");
-        return;
-      }
-      const presaleInfo = presaleInfoAll[0];
-      const presaleInfoPda = presaleInfo.publicKey;
-      const authority = presaleInfo.account.authority;
-
-      const mintPk = new PublicKey(ICO_MINT);
-
-      // Derive admin ATA
-      const adminAta = getAssociatedTokenAddressSync(mintPk, wallet.publicKey);
-
-      // Derive presale ATA (owned by presaleInfo PDA, allowOwnerOffCurve)
-      const [presaleAta] = PublicKey.findProgramAddressSync([Buffer.from("presale_token"), presaleInfoPda.toBuffer()], program.programId);
-      // Derive presaleVault PDA
-      const [presaleVaultPda] = PublicKey.findProgramAddressSync([Buffer.from("vault")], program.programId);
-
-      // Prepare transaction to create admin ATA if missing
-      const tx = new Transaction();
-
-      // Check admin ATA exists, create if missing
-      try {
-        await connection.getTokenAccountBalance(adminAta);
-      } catch {
-        tx.add(createAssociatedTokenAccountInstruction(wallet.publicKey, adminAta, wallet.publicKey, mintPk));
-      }
-
-      // Send tx if needed
-      if (tx.instructions.length > 0) {
-        await Transaction(tx, connection);
-      }
-
-      // Call depositToken on chain, program will create presale ATA itself
-      await program.methods
-        .depositToken(new BN(Number(amount) * 1e9))
-        .accounts({
-          mintAccount: mintPk,
-          tokenAccount: adminAta,
-          admin: wallet.publicKey,
-          toAssociatedTokenAccount: presaleAta,
-          presaleVault: presaleVaultPda,
-          presaleInfo: presaleInfoPda,
-          rent: SYSVAR_RENT_PUBKEY,
-          systemProgram: SystemProgram.programId,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          associatedTokenProgram: ASSOCIATED_PROGRAM_ID,
-        })
-        .rpc();
-
-      alert("✅ Tokens deposited to presale vault!");
-      await fetchIcoData();
-      await refreshPresaleBalances();
-    } catch (error) {
-      console.error("Error depositing tokens:", error);
-      alert(`❌ Error: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Two-way binding for USDT <-> SOLMAN
   const [usdtAmount, setUsdtAmount] = useState("");
   const [solmanAmount, setSolmanAmount] = useState("");
@@ -838,7 +429,6 @@ export default function PresalePageClient() {
   };
 
   const init = async () => {
-    await checkIfAdmin();
     await fetchIcoData();
     if (wallet.connected) {
       await fetchUserTokenBalance();
@@ -979,6 +569,8 @@ export default function PresalePageClient() {
               {/* --- END REPLACEMENT --- */}
 
               <BuyAndClaim
+                buyToken={buyTokens}
+                claimToken={claimTokens}
                 isConnected={wallet.connected}
                 buyControls={buyControls}
                 claimControls={claimControls}
