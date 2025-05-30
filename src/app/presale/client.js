@@ -1,38 +1,29 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { motion, useAnimation } from "framer-motion";
+import { useAnimation } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
-import { PublicKey, sendAndConfirmTransaction, SystemProgram, SYSVAR_RENT_PUBKEY, Transaction } from "@solana/web3.js";
+import { PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY } from "@solana/web3.js";
 import { Program, AnchorProvider, web3, BN } from "@coral-xyz/anchor";
-import {
-  TOKEN_PROGRAM_ID,
-  getAssociatedTokenAddress,
-  createAssociatedTokenAccountInstruction,
-  getAccount,
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  TokenAccountNotFoundError,
-  getAssociatedTokenAddressSync,
-} from "@solana/spl-token";
+import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress, getAccount, getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { ASSOCIATED_PROGRAM_ID } from "@project-serum/anchor/dist/cjs/utils/token";
 
 import IDL from "../../lib/solman_presale.json";
 import Progressbar from "../../components/progressbar/Progressbar";
-import { HermesClient } from "@pythnetwork/hermes-client";
 import { FaSpinner } from "react-icons/fa6";
 import PresaleCountdown from "@/components/presale/PresaleCountdown";
 import BuyAndClaim from "@/components/presale/BuyAndClaim";
 
-import TwoWayBinding from "@/components/presale/TwoWayBinding";
 import { toast } from "sonner";
 import TwoWayBindingInput from "@/components/presale/TwoWayBinding";
+import Link from "next/link";
 
 // Dynamically import WalletMultiButton with SSR disabled
 const WalletMultiButton = dynamic(() => import("@solana/wallet-adapter-react-ui").then((mod) => mod.WalletMultiButton), { ssr: false });
 
 const ENV_PROGRAM_ID = process.env.NEXT_PUBLIC_PROGRAM_ID2;
-// const ENV_ICO_MINT = process.env.NEXT_PUBLIC_ICO_MINT;
-const ENV_ICO_MINT = "KhdTGv2Ve1AVioVfQimLd84G4RfDUXx7m3Qf27p2tz4";
+const ENV_ICO_MINT = process.env.NEXT_PUBLIC_ICO_MINT;
+const ENV_USDC_MINT = process.env.NEXT_PUBLIC_USDC_MINT;
 
 // Program constants
 const PROGRAM_ID = new PublicKey(ENV_PROGRAM_ID);
@@ -260,7 +251,7 @@ export default function PresalePageClient() {
       const presaleInfoPda = presaleInfoAll[0].publicKey;
 
       // Prepare USDC mint and user's USDC token account
-      const usdcMint = new PublicKey("Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr");
+      const usdcMint = new PublicKey(ENV_USDC_MINT);
       const buyerUsdcAccount = getAssociatedTokenAddressSync(usdcMint, wallet.publicKey, true);
       const presaleVaultUsdcAccount = getAssociatedTokenAddressSync(usdcMint, presaleInfoPda, true);
 
@@ -372,7 +363,7 @@ export default function PresalePageClient() {
   const fetchUserUsdcBalance = async () => {
     if (!wallet.connected) return;
     try {
-      const usdcMint = new PublicKey("Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr");
+      const usdcMint = new PublicKey(ENV_USDC_MINT);
       const userUsdcAccount = await getAssociatedTokenAddress(usdcMint, wallet.publicKey);
       const accountInfo = await connection.getTokenAccountBalance(userUsdcAccount);
       setUserUsdcBalance(accountInfo.value.uiAmountString);
@@ -422,7 +413,7 @@ export default function PresalePageClient() {
 
       {/* Center Card */}
       <div className="relative z-20 flex flex-col items-center w-full">
-        <div className="mx-auto mt-4 mb-10 max-w-[540px] rounded-2xl border-2 border-black bg-[#fee000] px-6 py-8 shadow-xl">
+        <div className="mx-auto mt-4 mb-1 max-w-[540px] rounded-2xl border-2 border-black bg-[#fee000] px-6 py-8 shadow-xl">
           <div className="w-full flex justify-end mb-2">
             <WalletMultiButton
               style={{
@@ -442,9 +433,17 @@ export default function PresalePageClient() {
               )}
             </WalletMultiButton>
           </div>
-          <div className="flex items-center justify-center gap-2 mb-6">
+
+          <div className="flex items-center justify-center gap-2">
             <img src="./solman2.png" alt="Coin" className="w-8 h-8 object-contain" />
             <span className="text-black font-title-font text-2xl font-bold">BUY SOLMAN</span>
+          </div>
+          <div className="flex justify-center mb-8">
+            {CheckIsAdmin() ? (
+              <Link href={"/presale-admin"} className=" text-center w-full underline hover:text-neutral-700">
+                Visit Admin Panel
+              </Link>
+            ) : null}
           </div>
           {/* Spinner if loading */}
           {loading || wallet.connecting || wallet.disconnecting || !connection ? (
