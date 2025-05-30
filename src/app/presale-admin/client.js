@@ -36,6 +36,7 @@ const WalletMultiButton = dynamic(() => import("@solana/wallet-adapter-react-ui"
 const ENV_PROGRAM_ID = process.env.NEXT_PUBLIC_PROGRAM_ID2;
 const ENV_ICO_MINT = process.env.NEXT_PUBLIC_ICO_MINT;
 const ENV_USDC_MINT = process.env.NEXT_PUBLIC_USDC_MINT;
+const adminAddress = process.env.NEXT_PUBLIC_ADMIN_ADD;
 
 // Program constants
 const PROGRAM_ID = new PublicKey(ENV_PROGRAM_ID);
@@ -101,7 +102,7 @@ export default function PresalePageClient() {
 
   useEffect(() => {
     if (icoData) {
-      setMaxTokenAmountPerAddress(new BN(icoData.maxTokenAmountPerAddress).toNumber() || 0);
+      setMaxTokenAmountPerAddress(new BN(icoData.maxTokenAmountPerAddress).toNumber() / 1_000_000 || 0);
       setPricePerToken(icoData.pricePerToken || 0);
       setStartTime(new Date(new BN(icoData.startTime).toNumber()).toISOString().substring(0, 16) || "");
       setEndTime(new Date(new BN(icoData.endTime).toNumber()).toISOString().substring(0, 16) || "");
@@ -149,7 +150,6 @@ export default function PresalePageClient() {
       if (!wallet.connected) return;
 
       // Check if the wallet address matches the admin address
-      const adminAddress = "3JFwGRwwY6UMo4bGt4sFnLLTmxg5iyoMuNKQPf6oAucF";
       setIsAdmin(wallet.publicKey.toString() === adminAddress);
     } catch (error) {
       console.error("Error checking admin status:", error);
@@ -162,7 +162,6 @@ export default function PresalePageClient() {
   // Cleaned up: fetchAllIcoData and fetchUserIcoData merged into fetchIcoData below
 
   const CheckIsAdmin = () => {
-    const adminAddress = "3JFwGRwwY6UMo4bGt4sFnLLTmxg5iyoMuNKQPf6oAucF";
     const isAdmin = wallet.publicKey.toString() === adminAddress;
 
     return isAdmin;
@@ -286,7 +285,7 @@ export default function PresalePageClient() {
       const usdcMint = new PublicKey(ENV_USDC_MINT);
 
       await program.methods
-        .createPresale(new PublicKey(ICO_MINT), new BN(10), new BN(0.1 * 1e6), new BN(startTimestamp), new BN(endTimestamp))
+        .createPresale(new PublicKey(ICO_MINT), new BN(10 * 1e6), new BN(0.1 * 1e6), new BN(startTimestamp), new BN(endTimestamp))
         .accounts({
           authority: wallet.publicKey,
           usdcMint: usdcMint,
@@ -429,7 +428,7 @@ export default function PresalePageClient() {
 
       await program.methods
         .updatePresale(
-          new BN(maxTokenAmountPerAddress),
+          new BN(maxTokenAmountPerAddress * 1_000_000),
           new BN(pricePerToken * 1e9), // Assuming price is in USDC
           new BN(startTimestamp),
           new BN(endTimestamp)

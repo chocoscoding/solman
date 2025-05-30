@@ -24,6 +24,7 @@ const WalletMultiButton = dynamic(() => import("@solana/wallet-adapter-react-ui"
 const ENV_PROGRAM_ID = process.env.NEXT_PUBLIC_PROGRAM_ID2;
 const ENV_ICO_MINT = process.env.NEXT_PUBLIC_ICO_MINT;
 const ENV_USDC_MINT = process.env.NEXT_PUBLIC_USDC_MINT;
+const adminAddress = process.env.NEXT_PUBLIC_ADMIN_ADD;
 
 // Program constants
 const PROGRAM_ID = new PublicKey(ENV_PROGRAM_ID);
@@ -129,7 +130,6 @@ export default function PresalePageClient() {
   const CheckIsAdmin = () => {
     if (!wallet.connected) return false;
 
-    const adminAddress = "3JFwGRwwY6UMo4bGt4sFnLLTmxg5iyoMuNKQPf6oAucF";
     const isAdmin = wallet.publicKey.toString() === adminAddress;
 
     return isAdmin;
@@ -150,7 +150,7 @@ export default function PresalePageClient() {
         usdcMintAddress: mainICO.usdcMintAddress?.toString() || "N/A",
         usdcVaultAddress: mainICO.usdcVaultAddress?.toString() || "N/A",
         depositTokenAmount: new BN(mainICO.depositTokenAmount).toNumber() / 1e9 || 0,
-        soldTokenAmount: new BN(mainICO.soldTokenAmount).toNumber() || 0,
+        soldTokenAmount: new BN(mainICO.soldTokenAmount).toNumber() / 1e6 || 0,
         startTime: mainICO.startTime ?? "",
         endTime: mainICO.endTime ?? "",
         maxTokenAmountPerAddress: new BN(mainICO.maxTokenAmountPerAddress) || 0,
@@ -161,6 +161,11 @@ export default function PresalePageClient() {
         isHardCapped: mainICO.isHardCapped || false,
         totalTokens: new BN(mainICO.hardcapAmount) || 0,
       });
+      console.log(new BN(mainICO.depositTokenAmount).toNumber());
+      console.log(new BN(mainICO.soldTokenAmount).toNumber());
+
+      console.log(new BN(mainICO.pricePerToken).toNumber());
+
       if (userInfo) {
         // setUserTokenBalance(new BN(userInfo.buyTokenAmount).toNumber());
         setUserIcoData(userInfo);
@@ -231,7 +236,7 @@ export default function PresalePageClient() {
   }, [icoData]);
 
   const buyTokens = async () => {
-    const toast1 = toast.loading("Claiming Tokens", {
+    const toast1 = toast.loading("Buying Tokens", {
       duration: Infinity,
     });
     try {
@@ -256,6 +261,8 @@ export default function PresalePageClient() {
       const presaleVaultUsdcAccount = getAssociatedTokenAddressSync(usdcMint, presaleInfoPda, true);
 
       let quoteAmountBN = new BN(amount * 1_000_000);
+      console.log(amount * 1_000_000);
+      console.log(Math.floor(amount * 1_000_000));
 
       const [userInfoPda] = PublicKey.findProgramAddressSync(
         [
@@ -281,7 +288,13 @@ export default function PresalePageClient() {
         commitment: "confirmed",
         maxSupportedTransactionVersion: 0,
       });
+      if (txDetails?.meta?.logMessages?.length) {
+        txDetails.meta.logMessages.forEach((log, idx) => {
+          console.log(`Transaction log [${idx}]:`, log);
+        });
+      }
       await fetchUserTokenBalance();
+      await fetchUserUsdcBalance();
       toast.success(amount + "SOLMAN bought successfully", {
         id: toast1,
       });
@@ -341,10 +354,15 @@ export default function PresalePageClient() {
         })
         .rpc();
 
-      await connection.getParsedTransaction(txSig, {
+      const txDetails = await connection.getParsedTransaction(txSig, {
         commitment: "confirmed",
         maxSupportedTransactionVersion: 0,
       });
+      if (txDetails?.meta?.logMessages?.length) {
+        txDetails.meta.logMessages.forEach((log, idx) => {
+          console.log(`Transaction log [${idx}]:`, log);
+        });
+      }
       await fetchUserTokenBalance();
       toast.success("Token claimed to wallet successfully", {
         id: toast1,
@@ -483,7 +501,7 @@ export default function PresalePageClient() {
                   <div className="flex flex-col items-start rounded-lg border border-black bg-yellow-100 text-black p-3">
                     <span className="text-xs text-black/70">Unclaimed Tokens</span>
                     <span className="font-bold text-lg">
-                      {userIcoData?.buyTokenAmount ? new BN(userIcoData.buyTokenAmount).toString() : "0"}
+                      {userIcoData?.buyTokenAmount ? new BN(userIcoData.buyTokenAmount).toNumber() / 1e6 : "0"}
                       <span className="ml-1.5 font-light text-sm">SOLMAN</span>
                     </span>
                   </div>
