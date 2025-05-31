@@ -15,7 +15,7 @@ export default function PresaleStatusCard({ icoData, solPriceInUsdc }) {
             </div>
             <div>
               <div className="text-gray-600">Tokens Sold</div>
-              <div className="font-medium">{icoData?.soldTokenAmount ? (icoData.soldTokenAmount / 1e6).toString() : "0"} tokens</div>
+              <div className="font-medium">{icoData?.soldTokenAmount ? icoData.soldTokenAmount.toString() : "0"} tokens</div>
             </div>
             <div>
               <div className="text-gray-600">Token Price</div>
@@ -28,9 +28,7 @@ export default function PresaleStatusCard({ icoData, solPriceInUsdc }) {
             </div>
             <div>
               <div className="text-gray-600">Available</div>
-              <div className="font-medium">
-                {icoData ? (icoData.depositTokenAmount - icoData.soldTokenAmount / 1e6).toString() : "--"} tokens
-              </div>
+              <div className="font-medium">{icoData ? (icoData.depositTokenAmount - icoData.soldTokenAmount).toString() : "--"} tokens</div>
             </div>
           </div>
         </div>

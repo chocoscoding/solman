@@ -182,7 +182,7 @@ export default function PresalePageClient() {
           usdcMintAddress: mainICO.usdcMintAddress?.toString() || "N/A",
           usdcVaultAddress: mainICO.usdcVaultAddress?.toString() || "N/A",
           depositTokenAmount: new BN(mainICO.depositTokenAmount).toNumber() / 1e9 || 0,
-          soldTokenAmount: new BN(mainICO.soldTokenAmount).toNumber() || 0,
+          soldTokenAmount: new BN(mainICO.soldTokenAmount).toNumber() / 1e6 || 0,
           startTime: mainICO.startTime ?? "",
           endTime: mainICO.endTime ?? "",
           maxTokenAmountPerAddress: new BN(mainICO.maxTokenAmountPerAddress) || 0,

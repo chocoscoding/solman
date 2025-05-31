@@ -56,8 +56,8 @@ export default function TwoWayBindingInput({ userUsdcBalance, pricePerToken, onC
             value={solmanAmount}
             onChange={handleSolmanChange}
           />
-          <div className="flex items-center gap-1 pr-2">
-            <img src="./solman2.png" alt="SOLMAN" className="w-6 h-6 object-contain" />
+          <div className="flex items-center gap-1 pr-5">
+            <img src="./solman_icon.jpg" alt="SOLMAN" className="w-6 h-6 object-contain" />
             <span className="m-text font-bold">SOLMAN</span>
           </div>
         </div>
