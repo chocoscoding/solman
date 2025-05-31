@@ -37,19 +37,19 @@ export default function Hero() {
               </Letter3DSwap>
             </Suspense>
           </h1>
-          <p className="text-lg md:text-xl font-mono">
+          <p className="text-base sm:text-lg md:text-xl font-mono">
             SolMan: The Meme Warrior of Solana. <br /> More than a meme — a mission to restore trust, culture, and transparency on the
             blockchain.
           </p>
           <div>
             <h2 className="font-bold text-lg md:text-2xl uppercase font-gorditas">Contract Address</h2>
             <div
-              className="flex items-center mt-2 bg-white rounded shadow-lg overflow-hidden max-w-md"
+              className="flex items-center mt-2 bg-white rounded-md shadow-lg overflow-hidden max-w-md"
               style={{ boxShadow: "2px 4px 0 0 #000, 0 0 1px 0 #000" }}>
               <div className="flex-1 px-4 py-2 truncate font-gorditas text-lg md:text-xl">{contractAddress}</div>
               <button
                 onClick={handleCopy}
-                className="bg-red-500 text-white px-4 py-2 hover:bg-red-600 shadow-black mr-2 my-1 rounded cursor-pointer"
+                className="bg-red-500 text-white px-4 py-2 hover:bg-red-600 shadow-black mr-2 my-1 rounded-md cursor-pointer"
                 style={{ boxShadow: "0.25px 1px 0 0 #000, 0 0 1px 0 #000" }}>
                 Copy
               </button>
@@ -59,7 +59,7 @@ export default function Hero() {
             <Link href="#">
               <motion.button
                 {...tiltHoverSpringButton}
-                className="bg-red-500 text-white px-8 py-3 text-xl font-bold rounded shadow-black hover:bg-red-600 font-gorditas cursor-pointer"
+                className="bg-red-500 text-white px-2 sm:px-8 py-3 text-xl font-bold rounded-md shadow-black hover:bg-red-600 font-gorditas cursor-pointer"
                 style={{ boxShadow: "2px 4px 0 0 #000, 0 0 1px 0 #000" }}>
                 BUY $SOLMAN
               </motion.button>
@@ -67,7 +67,7 @@ export default function Hero() {
             <Link href="#">
               <motion.button
                 {...tiltHoverRightSpringButton}
-                className="bg-white text-black px-8 py-3 text-xl font-bold rounded shadow-black hover:bg-gray-100 font-gorditas cursor-pointer"
+                className="bg-white text-black px-2 sm:px-8 py-3 text-xl font-bold rounded-md shadow-black hover:bg-gray-100 font-gorditas cursor-pointer"
                 style={{ boxShadow: "2px 4px 0 0 #000, 0 0 1px 0 #000" }}>
                 RAYDIUM
               </motion.button>
