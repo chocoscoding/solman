@@ -161,11 +161,6 @@ export default function PresalePageClient() {
         isHardCapped: mainICO.isHardCapped || false,
         totalTokens: new BN(mainICO.hardcapAmount) || 0,
       });
-      console.log(new BN(mainICO.depositTokenAmount).toNumber());
-      console.log(new BN(mainICO.soldTokenAmount).toNumber());
-
-      console.log(new BN(mainICO.pricePerToken).toNumber());
-
       if (userInfo) {
         // setUserTokenBalance(new BN(userInfo.buyTokenAmount).toNumber());
         setUserIcoData(userInfo);
@@ -260,10 +255,6 @@ export default function PresalePageClient() {
       const buyerUsdcAccount = getAssociatedTokenAddressSync(usdcMint, wallet.publicKey, true);
       const presaleVaultUsdcAccount = getAssociatedTokenAddressSync(usdcMint, presaleInfoPda, true);
 
-      let quoteAmountBN = new BN(amount * 1_000_000);
-      console.log(amount * 1_000_000);
-      console.log(Math.floor(amount * 1_000_000));
-
       const [userInfoPda] = PublicKey.findProgramAddressSync(
         [
           Buffer.from("user"),
@@ -288,11 +279,6 @@ export default function PresalePageClient() {
         commitment: "confirmed",
         maxSupportedTransactionVersion: 0,
       });
-      if (txDetails?.meta?.logMessages?.length) {
-        txDetails.meta.logMessages.forEach((log, idx) => {
-          console.log(`Transaction log [${idx}]:`, log);
-        });
-      }
       await fetchUserTokenBalance();
       await fetchUserUsdcBalance();
       toast.success(amount + "SOLMAN bought successfully", {
@@ -358,11 +344,6 @@ export default function PresalePageClient() {
         commitment: "confirmed",
         maxSupportedTransactionVersion: 0,
       });
-      if (txDetails?.meta?.logMessages?.length) {
-        txDetails.meta.logMessages.forEach((log, idx) => {
-          console.log(`Transaction log [${idx}]:`, log);
-        });
-      }
       await fetchUserTokenBalance();
       toast.success("Token claimed to wallet successfully", {
         id: toast1,

@@ -40,7 +40,7 @@ export default function TwoWayBindingInput({ userUsdcBalance, pricePerToken, onC
             onChange={handleUsdtChange}
           />
           <div className="flex items-center gap-1 pr-2">
-            <img src="./solman2.png" alt="USDC" className="w-6 h-6 object-contain" />
+            <img src="./usdc-logo.png" alt="USDC" className="w-6 h-6 object-contain" />
             <span className="m-text font-bold">USDC</span>
           </div>
         </div>

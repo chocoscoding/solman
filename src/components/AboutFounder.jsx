@@ -67,8 +67,16 @@ const AboutFounder = () => {
             <motion.button
               {...fadeInUpSpring}
               {...tiltHoverSpringButton}
-              className="inline-block bg-yellow-400/90 text-black font-bold px-5 py-3 rounded boxShadow cursor-pointer">
-              Visionary Leader
+              className="inline-block bg-yellow-400/90 text-black font-bold px-5 py-3 rounded boxShadow cursor-pointer"
+              onClick={() => {
+                const link = document.createElement("a");
+                link.href = "/SolMan_Token_Whitepaper.pdf";
+                link.download = "SolMan_Token_Whitepaper.pdf";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }}>
+              Download whitepaper
             </motion.button>
             <motion.button
               {...fadeInUpSpring}
