@@ -23,7 +23,7 @@ const Footer = () => {
             <Link
               href="/presale"
               className="bg-red-600 hover:bg-red-700 text-white font-bold px-2 py-2.5 h-12 rounded-lg shadow-md text-lg transition-colors boxShadow border-2 border-[#222]">
-              BUY $PONKE
+              BUY $SOLMAN
             </Link>
           </motion.div>
           <motion.div className="block" {...tiltHoverRightSpringButton}>
