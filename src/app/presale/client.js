@@ -153,7 +153,7 @@ export default function PresalePageClient() {
         soldTokenAmount: new BN(mainICO.soldTokenAmount).toNumber() / 1e6 || 0,
         startTime: mainICO.startTime ?? "",
         endTime: mainICO.endTime ?? "",
-        maxTokenAmountPerAddress: new BN(mainICO.maxTokenAmountPerAddress) || 0,
+        maxTokenAmountPerAddress: new BN(mainICO.maxTokenAmountPerAddress).toNumber() / 1e6 || 0,
         pricePerToken: new BN(mainICO.pricePerToken).toNumber() / 1e9 || 0,
         isLive: mainICO.isLive || false,
         authority: mainICO.authority?.toString() || "N/A",
@@ -243,7 +243,23 @@ export default function PresalePageClient() {
       if (!amount || Number(amount) <= 0) {
         toast.error("Please enter a valid amount", {
           id: toast1,
-          duration: 2,
+          duration: 2000,
+        });
+        return;
+      }
+      if (Number(amount) + userBought > maxPerWallet) {
+        toast.error(`You have reached the maximum allowed purchase per wallet for this presale (${maxPerWallet} SOLMAN).`, {
+          id: toast1,
+          duration: 4000,
+        });
+        return;
+      }
+
+      const tokensLeft = (icoData && icoData.depositTokenAmount - icoData.soldTokenAmount) ?? 0;
+      if (tokensLeft !== null && Number(amount) > tokensLeft) {
+        toast.error(`Not enough tokens left in the presale. Only ${tokensLeft} SOLMAN tokens remain.`, {
+          id: toast1,
+          duration: 4000,
         });
         return;
       }
@@ -287,17 +303,27 @@ export default function PresalePageClient() {
       });
       await fetchUserTokenBalance();
       await fetchUserUsdcBalance();
-      toast.success(amount + "SOLMAN bought successfully", {
+      toast.success(amount + " SOLMAN bought successfully", {
         id: toast1,
+        duration: 3000,
       });
     } catch (error) {
       console.log("Error buying tokens:", error);
-      toast.success("Error: " + error.message, {
+
+      // Anchor error codes for your custom errors
+      const anchorError = error?.errorCode?.code || error?.code;
+      let message = "Error: " + (error.message || "Unknown error");
+
+      if (anchorError === "InsufficientFund" || error?.message?.includes("Error Code: InsufficientFund")) {
+        message = "Not enough tokens left in the presale. Please try a smaller amount or check if the presale is sold out.";
+      } else if (anchorError === "MaxTokenPassed" || error?.message?.includes("Error Code: MaxTokenPassed")) {
+        message = "You have reached the maximum allowed purchase per wallet for this presale.";
+      }
+
+      toast.error(message, {
         id: toast1,
+        duration: 4000,
       });
-    } finally {
-      await fetchIcoData();
-      toast.dismiss(toast1);
     }
   };
 
@@ -359,15 +385,14 @@ export default function PresalePageClient() {
       await fetchUserTokenBalance();
       toast.success("Token claimed to wallet successfully", {
         id: toast1,
+        duration: 3000,
       });
     } catch (error) {
       console.log("Error claiming tokens:", error);
       toast.success("Error claiming token: " + error.message, {
         id: toast1,
+        duration: 3000,
       });
-    } finally {
-      fetchIcoData();
-      toast.dismiss(toast1);
     }
   };
 

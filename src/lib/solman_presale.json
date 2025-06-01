@@ -703,6 +703,11 @@
       "code": 6013,
       "name": "InvalidVaultAccount",
       "msg": "Invalid vault account"
+    },
+    {
+      "code": 6014,
+      "name": "MaxTokenPassed",
+      "msg": "Token that can be bought surpassed"
     }
   ],
   "types": [
