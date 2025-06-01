@@ -32,7 +32,7 @@ const Footer = () => {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Telegram"
-              className="bg-white hover:bg-[#FFD43B] border-2 border-black rounded-lg w-12 h-12 flex items-center justify-center transition-colors boxShadow">
+              className="bg-white hover:bg-[#FFD43B] border-2 border-black rounded-lg w-auto px-2 md:px-0.5 md:w-12 h-12 flex items-center justify-center transition-colors boxShadow mt-2 md:mt-0">
               <span className="mr-2 font-bold md:hidden">Telegram</span>
               <FaTelegram className="text-black text-2xl" />
             </Link>
@@ -43,7 +43,7 @@ const Footer = () => {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="X"
-              className="bg-white hover:bg-[#FFD43B] border-2 border-black rounded-lg w-12 h-12 flex items-center justify-center transition-colors boxShadow">
+              className="bg-white hover:bg-[#FFD43B] border-2 border-black rounded-lg w-auto px-2 md:px-0.5 md:w-12 h-12 flex items-center justify-center transition-colors boxShadow">
               <span className="mr-2 font-bold md:hidden">Twitter</span>
               <FaXTwitter className="text-black text-2xl" />
             </Link>
