@@ -345,6 +345,12 @@ export default function PresalePageClient() {
         commitment: "confirmed",
         maxSupportedTransactionVersion: 0,
       });
+      if (txDetails?.meta?.logMessages?.length) {
+        txDetails.meta.logMessages.forEach((log, idx) => {
+          console.log(`Transaction log [${idx}]:`, log);
+        });
+      }
+
       await fetchUserTokenBalance();
       toast.success("Token claimed to wallet successfully", {
         id: toast1,
