@@ -18,7 +18,7 @@ const Footer = () => {
           Presale Buyers Of Blepe Will Be Able To Stake Their Tokens Into The Smart Contract Before Listing Day To Benefit From The High
           Early Rewards Opportunity.
         </p>
-        <div className="flex gap-4 mb-8 items-center">
+        <div className="flex gap-4 mb-8 items-center flex-col md:flex-row">
           <motion.div className="block" {...tiltHoverSpringButton}>
             <Link
               href="/presale"
@@ -33,6 +33,7 @@ const Footer = () => {
               rel="noopener noreferrer"
               aria-label="Telegram"
               className="bg-white hover:bg-[#FFD43B] border-2 border-black rounded-lg w-12 h-12 flex items-center justify-center transition-colors boxShadow">
+              <span className="mr-2 font-bold md:hidden">Telegram</span>
               <FaTelegram className="text-black text-2xl" />
             </Link>
           </motion.div>
@@ -43,6 +44,7 @@ const Footer = () => {
               rel="noopener noreferrer"
               aria-label="X"
               className="bg-white hover:bg-[#FFD43B] border-2 border-black rounded-lg w-12 h-12 flex items-center justify-center transition-colors boxShadow">
+              <span className="mr-2 font-bold md:hidden">Twitter</span>
               <FaXTwitter className="text-black text-2xl" />
             </Link>
           </motion.div>
