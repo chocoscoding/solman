@@ -161,12 +161,17 @@ export default function PresalePageClient() {
         isHardCapped: mainICO.isHardCapped || false,
         totalTokens: new BN(mainICO.hardcapAmount) || 0,
       });
+      console.log(new BN(mainICO.depositTokenAmount).toNumber());
+      console.log(new BN(mainICO.soldTokenAmount).toNumber());
+
+      console.log(new BN(mainICO.pricePerToken).toNumber());
+
       if (userInfo) {
         // setUserTokenBalance(new BN(userInfo.buyTokenAmount).toNumber());
         setUserIcoData(userInfo);
       }
     } catch (error) {
-      console.error("Error fetching ICO data:", error);
+      console.log("Error fetching ICO data:", error);
     } finally {
       setLoading(false);
     }
@@ -187,7 +192,7 @@ export default function PresalePageClient() {
         setUserTokenBalance("0");
       }
     } catch (error) {
-      console.error("Error fetching token balance:", error);
+      console.log("Error fetching token balance:", error);
       setUserTokenBalance("0");
     }
   };
@@ -221,7 +226,7 @@ export default function PresalePageClient() {
       setPresaleUsdcBalance(0);
       setPresaleSolBalance(0);
       // Optionally log error
-      // console.error("Error refreshing presale balances:", error);
+      // console.log("Error refreshing presale balances:", error);
     }
   };
 
@@ -286,7 +291,7 @@ export default function PresalePageClient() {
         id: toast1,
       });
     } catch (error) {
-      console.error("Error buying tokens:", error);
+      console.log("Error buying tokens:", error);
       toast.success("Error: " + error.message, {
         id: toast1,
       });
@@ -356,7 +361,7 @@ export default function PresalePageClient() {
         id: toast1,
       });
     } catch (error) {
-      console.error("Error claiming tokens:", error);
+      console.log("Error claiming tokens:", error);
       toast.success("Error claiming token: " + error.message, {
         id: toast1,
       });
