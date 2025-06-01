@@ -262,6 +262,7 @@ export default function PresalePageClient() {
         ],
         program.programId
       );
+      let quoteAmountBN = new BN(amount * 1_000_000);
 
       // Send the transaction
       const tx = program.methods.buyToken(quoteAmountBN).accounts({

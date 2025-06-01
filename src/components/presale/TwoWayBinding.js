@@ -26,7 +26,7 @@ export default function TwoWayBindingInput({ userUsdcBalance, pricePerToken, onC
   };
 
   return (
-    <div className="grid gap-4 grid-cols-2 mt-4">
+    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 mt-4">
       <div>
         <div className="flex items-center justify-between gap-3 mb-1">
           <span className="font-semibold text-black">You send</span>
