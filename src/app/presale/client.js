@@ -505,7 +505,7 @@ export default function PresalePageClient() {
             <div className="flex flex-col items-center justify-center min-h-[300px] min-w-[300px] w-full md:w-[400px]">
               <FaSpinner className="animate-spin text-black" style={{ fontSize: 80 }} />
             </div>
-          ) : noPresale ? (
+          ) : noPresale || !icoData?.isLive ? (
             <div className="flex flex-col items-center justify-center min-h-[300px] min-w-[300px] w-full md:w-[400px]">
               <span className="text-black text-xl font-bold">No presale is currently active.</span>
             </div>
