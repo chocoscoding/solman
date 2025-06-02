@@ -33,6 +33,8 @@ const ICO_MINT = new PublicKey(ENV_ICO_MINT);
 // Example price per SOLMAN in USDT
 
 export default function PresalePageClient() {
+  // No presale state
+  const [noPresale, setNoPresale] = useState(false);
   const { connection } = useConnection();
   const wallet = useWallet();
 
@@ -79,7 +81,12 @@ export default function PresalePageClient() {
   async function getPresaleAndUserInfo(program, wallet, isAdmin = false) {
     // Fetch presaleInfo PDA and account
     const presaleInfoAll = await program.account.presaleInfo.all();
-    if (!presaleInfoAll.length) throw new Error("No presale info found");
+    if (!presaleInfoAll.length || presaleInfoAll.length === 0) {
+      setNoPresale(true);
+      throw new Error("No presale info found");
+    } else {
+      setNoPresale(false);
+    }
     const presaleInfo = presaleInfoAll[0];
     const presaleInfoPda = presaleInfo.publicKey;
     const authority = presaleInfo.account.authority;
@@ -497,6 +504,10 @@ export default function PresalePageClient() {
           {loading || wallet.connecting || wallet.disconnecting || !connection ? (
             <div className="flex flex-col items-center justify-center min-h-[300px] min-w-[300px] w-full md:w-[400px]">
               <FaSpinner className="animate-spin text-black" style={{ fontSize: 80 }} />
+            </div>
+          ) : noPresale ? (
+            <div className="flex flex-col items-center justify-center min-h-[300px] min-w-[300px] w-full md:w-[400px]">
+              <span className="text-black text-xl font-bold">No presale is currently active.</span>
             </div>
           ) : (
             <>
