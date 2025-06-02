@@ -520,7 +520,7 @@ export default function PresalePageClient() {
                   <div className="flex flex-col items-start rounded-lg border border-black bg-yellow-100 text-black p-3">
                     <span className="text-xs text-black/70">Unclaimed Tokens</span>
                     <span className="font-bold text-lg">
-                      {new BN(userIcoData.buyTokenAmount ?? 0).toNumber() / 1e6 ?? "0"}
+                      {userIcoData.buyTokenAmount ? new BN(userIcoData.buyTokenAmount ?? 0).toNumber() / 1e6 : "0"}
                       <span className="ml-1.5 font-light text-sm">SOLMAN</span>
                     </span>
                   </div>
