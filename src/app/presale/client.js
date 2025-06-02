@@ -248,7 +248,7 @@ export default function PresalePageClient() {
         return;
       }
       const maxPerWallet = icoData?.maxTokenAmountPerAddress ?? 0;
-      const userBought = new BN(userIcoData?.buyTokenAmount).toNumber() / 1e6 ?? 0;
+      const userBought = new BN(userIcoData?.buyTokenAmount ?? 0).toNumber() / 1e6 ?? 0;
       if (Number(amount) + userBought > maxPerWallet) {
         toast.error(`You have reached the maximum allowed purchase per wallet for this presale (${maxPerWallet} SOLMAN).`, {
           id: toast1,
@@ -303,8 +303,7 @@ export default function PresalePageClient() {
         commitment: "confirmed",
         maxSupportedTransactionVersion: 0,
       });
-      await fetchUserTokenBalance();
-      await fetchUserUsdcBalance();
+      await Promise.all([fetchUserTokenBalance(), fetchUserUsdcBalance(), fetchIcoData()]);
       toast.success(amount + " SOLMAN bought successfully", {
         id: toast1,
         duration: 3000,
@@ -384,7 +383,7 @@ export default function PresalePageClient() {
         });
       }
 
-      await fetchUserTokenBalance();
+      await Promise.all([fetchUserTokenBalance(), fetchUserUsdcBalance(), fetchIcoData()]);
       toast.success("Token claimed to wallet successfully", {
         id: toast1,
         duration: 3000,
@@ -521,7 +520,7 @@ export default function PresalePageClient() {
                   <div className="flex flex-col items-start rounded-lg border border-black bg-yellow-100 text-black p-3">
                     <span className="text-xs text-black/70">Unclaimed Tokens</span>
                     <span className="font-bold text-lg">
-                      {userIcoData?.buyTokenAmount ? new BN(userIcoData.buyTokenAmount).toNumber() / 1e6 : "0"}
+                      {new BN(userIcoData.buyTokenAmount ?? 0).toNumber() / 1e6 ?? "0"}
                       <span className="ml-1.5 font-light text-sm">SOLMAN</span>
                     </span>
                   </div>
