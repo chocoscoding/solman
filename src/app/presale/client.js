@@ -247,6 +247,8 @@ export default function PresalePageClient() {
         });
         return;
       }
+      const maxPerWallet = icoData?.maxTokenAmountPerAddress ?? 0;
+      const userBought = new BN(userIcoData?.buyTokenAmount).toNumber() / 1e6 ?? 0;
       if (Number(amount) + userBought > maxPerWallet) {
         toast.error(`You have reached the maximum allowed purchase per wallet for this presale (${maxPerWallet} SOLMAN).`, {
           id: toast1,
