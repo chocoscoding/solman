@@ -83,7 +83,7 @@ export default function Hero() {
 
       {/* Top left faded image */}
       <motion.div
-        className="absolute top-0 left-0 z-0 opacity-10 pointer-events-none"
+        className="absolute top-0 left-0 z-0 opacity-10 pointer-events-none hidden md:block"
         initial={{ opacity: 0, y: -32 }}
         animate={{ opacity: 0.1, y: 0 }}
         transition={{ duration: 1.2, delay: 0.2 }}>
@@ -91,7 +91,7 @@ export default function Hero() {
       </motion.div>
       {/* Center right faded image */}
       <motion.div
-        className="absolute top-9/12 left-4/12 z-0 opacity-10 -translate-y-1/2 pointer-events-none z-0"
+        className="absolute top-9/12 left-4/12 z-0 opacity-10 -translate-y-1/2 pointer-events-none hidden md:block"
         initial={{ opacity: 0, y: 32 }}
         animate={{ opacity: 0.1, y: 0 }}
         transition={{ duration: 1.2, delay: 0.4 }}>
