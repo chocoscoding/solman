@@ -14,6 +14,7 @@ export default function BuyAndClaim({
   claimToken,
   icoData,
   userIcoData,
+  actionLoading,
 }) {
   if (!isConnected)
     return (
@@ -36,6 +37,7 @@ export default function BuyAndClaim({
   if (end && now >= end) {
     return hasClaimable ? (
       <motion.button
+        disabled={actionLoading}
         onClick={claimToken}
         className="outline-2 outline-black mt-2 mb-2 p-0.5 rounded-full w-full relative"
         animate={claimControls}
@@ -60,6 +62,7 @@ export default function BuyAndClaim({
   // Ongoing
   return (
     <motion.button
+      disabled={actionLoading}
       onClick={buyToken}
       className="outline-2 outline-black mt-6 mb-2 p-0.5 rounded-full w-full relative"
       animate={buyControls}

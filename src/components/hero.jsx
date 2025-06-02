@@ -25,14 +25,14 @@ export default function Hero() {
   };
 
   return (
-    <div className="min-h-screen bg-yellow-400 flex flex-col justify-between font-sans pt-10 overflow-hidden mt-[5rem] relative">
-      <div className="flex flex-col md:flex-row items-center justify-between max-w-[1200px] mx-auto px-4 py-12 mt-[4rem] w-full z-10">
+    <div className="min-h-screen bg-yellow-400 flex flex-col justify-between font-sans md:pt-10 overflow-hidden md:mt-[5rem] relative">
+      <div className="flex flex-col md:flex-row items-center justify-between max-w-[1200px] mx-auto px-4 py-12 md:mt-[4rem] w-full z-10">
         <motion.div className="text-black max-w-2xl space-y-8" initial="hidden" animate="visible" variants={fadeUp}>
           <h1
             className="text-5xl md:text-8xl font-bold drop-shadow-lg font-gorditas text-shadow-white"
             style={{ textShadow: "2px 3px 2px #ffffffa8" }}>
             <Suspense fallback={<span>$SOLMAN</span>}>
-              <Letter3DSwap rotateDirection="top" staggerFrom="center" suppressHydrationWarning>
+              <Letter3DSwap rotateDirection="top" staggerFrom="center" mainClassName={``} suppressHydrationWarning>
                 $SOLMAN
               </Letter3DSwap>
             </Suspense>
@@ -114,7 +114,7 @@ export default function Hero() {
         initial={{ opacity: 0, y: 32 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1.2, delay: 0.5 }}>
-        <Image src="/solman1.png" alt="Ponke Hero" width={280} height={280} className="w-56 h-auto" priority />
+        <Image src="/solman1.png" alt="Ponke Hero" width={280} height={280} className="w-64 md:w-56 h-auto" priority />
       </motion.div>
 
       {/* Marquee */}

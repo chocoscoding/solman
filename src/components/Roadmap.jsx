@@ -1,5 +1,5 @@
-import React from "react";
-
+"use client";
+import { motion } from "motion/react";
 // Timeline data
 const phases = [
   {
@@ -47,7 +47,12 @@ const Roadmap = () => (
             return (
               <div key={phase.phase} className="flex flex-col md:flex-row items-center">
                 {/* Left side content */}
-                <div className={`md:w-1/2 ${isLeft ? "md:pr-8 md:justify-end flex" : "md:order-2 md:pl-8 flex justify-start"}`}>
+                <motion.div
+                  whileInView={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, y: 30 }}
+                  transition={{ duration: 0.5, delay: idx * 0.15, ease: "easeOut" }}
+                  viewport={{ once: true, amount: 0.23 }}
+                  className={`w-full md:w-1/2 ${isLeft ? "md:pr-8 md:justify-end flex" : "md:order-2 md:pl-8 flex justify-start"}`}>
                   <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-md">
                     <h3 className="text-2xl font-bold mb-2 text-yellow-700">{phase.title}</h3>
                     <ul className="text-gray-700 text-lg space-y-1">
@@ -56,9 +61,14 @@ const Roadmap = () => (
                       ))}
                     </ul>
                   </div>
-                </div>
+                </motion.div>
                 {/* Right side empty for alignment */}
-                <div className={`md:w-1/2 ${isLeft ? "md:order-2" : "md:pr-8 md:justify-end flex"}`}></div>
+                <motion.div
+                  whileInView={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, y: 30 }}
+                  transition={{ duration: 0.5, delay: idx * 0.15, ease: "easeOut" }}
+                  viewport={{ once: true, amount: 0.23 }}
+                  className={`w-full md:w-1/2 ${isLeft ? "md:order-2" : "md:pr-8 md:justify-end flex"}`}></motion.div>
               </div>
             );
           })}

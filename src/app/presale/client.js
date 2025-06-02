@@ -37,10 +37,13 @@ export default function PresalePageClient() {
   const wallet = useWallet();
 
   const [loading, setLoading] = useState(true);
+
   const [icoData, setIcoData] = useState(null);
   const [userIcoData, setUserIcoData] = useState(null);
   const [amount, setAmount] = useState("");
   const [userTokenBalance, setUserTokenBalance] = useState(null);
+
+  const [actionLoading, setActionLoading] = useState(false);
 
   const [maxTokenAmountPerAddress, setMaxTokenAmountPerAddress] = useState(0);
   const [pricePerToken, setPricePerToken] = useState(0);
@@ -236,6 +239,8 @@ export default function PresalePageClient() {
   }, [icoData]);
 
   const buyTokens = async () => {
+    if (actionLoading) return;
+    setActionLoading(true);
     const toast1 = toast.loading("Buying Tokens", {
       duration: Infinity,
     });
@@ -325,10 +330,14 @@ export default function PresalePageClient() {
         id: toast1,
         duration: 4000,
       });
+    } finally {
+      setActionLoading(false);
     }
   };
 
   const claimTokens = async () => {
+    if (actionLoading) return;
+    setActionLoading(true);
     const toast1 = toast.loading("Claiming Tokens", {
       duration: Infinity,
     });
@@ -394,6 +403,8 @@ export default function PresalePageClient() {
         id: toast1,
         duration: 3000,
       });
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -549,6 +560,7 @@ export default function PresalePageClient() {
                 handleClaimLeave={handleClaimLeave}
                 icoData={icoData}
                 userIcoData={userIcoData}
+                actionLoading={actionLoading}
               />
             </>
           )}
